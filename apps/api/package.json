@@ -14,5 +14,15 @@
     "tsx": "^4.23.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@domain/*": ["apps/api/src/domain/*"],
+      "@application/*": ["apps/api/src/application/*"],
+      "@shared/*": ["apps/api/src/shared/*"]
+    }
   }
+
+
 }

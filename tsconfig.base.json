@@ -1,8 +1,24 @@
 {
   "compilerOptions": {
     "target": "ES2023",
+
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+
+    "paths": {
+      "@domain": [
+        "./apps/api/src/domain/index.ts"
+      ],
+      "@application": [
+        "./apps/api/src/application/index.ts"
+      ],
+      "@infrastructure": [
+        "./apps/api/src/infrastructure/index.ts"
+      ],
+      "@shared": [
+        "./apps/api/src/shared/index.ts"
+      ]
+    },
 
     "strict": true,
 
