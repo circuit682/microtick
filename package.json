@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "description": "MicroTick monorepo powering the Wamacani WiFi platform",
   "scripts": {
-    
+     "test": "pnpm -r test",
+     "typecheck": "pnpm -r typecheck"
   },
   "author": "John Kali",
   "devEngines": {

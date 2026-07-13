@@ -4,5 +4,15 @@
   "version": "0.1.0",
   "description": "Backend API for the MicroTick platform.",
   "type": "module",
-  "scripts": {}
+  "scripts": {
+  "test": "vitest run",
+  "test:watch": "vitest",
+  "typecheck": "tsc --noEmit"
+},
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
 }
