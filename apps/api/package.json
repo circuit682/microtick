@@ -1,0 +1,8 @@
+{
+  "name": "@microtick/api",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Backend API for the MicroTick platform.",
+  "type": "module",
+  "scripts": {}
+}
