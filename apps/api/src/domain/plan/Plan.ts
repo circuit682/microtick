@@ -1,3 +1,5 @@
+import { ValidationError, ErrorCode } from "@shared";
+
 export interface PlanProps {
   id: string;
   name: string;
@@ -10,6 +12,16 @@ export class Plan {
   private readonly props: PlanProps;
 
   constructor(props: PlanProps) {
+    
+    if (props.price <= 0) {
+        throw new ValidationError(
+            ErrorCode.PLAN_INVALID_PRICE,
+            "Plan price must be greater than zero.",
+            {
+                attemptedPrice: props.price,
+            }
+        );
+    }
     this.props = Object.freeze({ ...props });
   }
 
