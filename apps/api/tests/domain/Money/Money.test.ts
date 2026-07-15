@@ -58,4 +58,41 @@ describe("Money", () => {
     // When / Then
     expect(() => Money.fromKES(amount)).toThrow();
   });
+  it("should preserve the supplied amount", () => {
+    // Given
+    const amount = 500;
+
+    // When
+    const money = Money.fromKES(amount);
+
+    // Then
+    expect(money.amount).toBe(amount);
+  });
+  it("should consider two money values with the same amount equal", () => {
+    // Given
+    const first = Money.fromKES(500);
+    const second = Money.fromKES(500);
+
+    // Then
+    expect(first.equals(second)).toBe(true);
+  });
+  it("should consider two money values with different amounts not equal", () => {
+    // Given
+    const first = Money.fromKES(500);
+    const second = Money.fromKES(1000);
+
+    // Then
+    expect(first.equals(second)).toBe(false);
+  });
+  it("should add two monetary values", () => {
+    // Given
+    const first = Money.fromKES(500);
+    const second = Money.fromKES(200);
+
+    // When
+    const result = first.add(second);
+
+    // Then
+    expect(result.equals(Money.fromKES(700))).toBe(true);
+  });
 });

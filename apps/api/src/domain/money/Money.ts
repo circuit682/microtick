@@ -1,7 +1,7 @@
 import { ValidationError, ErrorCode } from "@shared";
 
 export class Money {
-  private constructor() {}
+  private constructor(private readonly _amount: number) {}
 
   static fromKES(amount: number): Money {
     if (!Number.isFinite(amount)) {
@@ -24,6 +24,16 @@ export class Money {
       );
     }
 
-    return new Money();
+    return new Money(amount);
+  }
+
+  get amount(): number {
+    return this._amount;
+  }
+  equals(other: Money): boolean {
+    return this.amount === other.amount;
+  }
+  add(other: Money): Money {
+    return Money.fromKES(this.amount + other.amount);
   }
 }
