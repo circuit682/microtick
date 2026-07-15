@@ -36,4 +36,22 @@ export class Money {
   add(other: Money): Money {
     return Money.fromKES(this.amount + other.amount);
   }
+  subtract(other: Money): Money {
+    return Money.fromKES(this.amount - other.amount);
+  }
+  isZero(): boolean {
+    return this.amount === 0;
+  }
+  isGreaterThan(other: Money): boolean {
+    return this.amount > other.amount;
+  }
+  isLessThan(other: Money): boolean {
+    return this.amount < other.amount;
+  }
+  isGreaterThanOrEqualTo(other: Money): boolean {
+    return this.isGreaterThan(other) || this.equals(other);
+  }
+  isLessThanOrEqualTo(other: Money): boolean {
+    return this.isLessThan(other) || this.equals(other);
+  }
 }

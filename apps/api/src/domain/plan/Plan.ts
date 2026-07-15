@@ -1,9 +1,10 @@
 import { ValidationError, ErrorCode } from "@shared";
+import { Money } from "../money/index.js";
 
 export interface PlanProps {
   id: string;
   name: string;
-  price: number;
+  price: Money;
   duration: number;
   active: boolean;
 }
@@ -17,7 +18,7 @@ export class Plan {
   }
 
   private validate(props: PlanProps): void {
-    if (props.price <= 0) {
+    if (props.price.isLessThanOrEqualTo(Money.fromKES(0))) {
       throw new ValidationError(
         ErrorCode.PLAN_INVALID_PRICE,
         "Plan price must be greater than zero.",
@@ -36,7 +37,7 @@ export class Plan {
     return this.props.name;
   }
 
-  get price(): number {
+  get price(): Money {
     return this.props.price;
   }
 

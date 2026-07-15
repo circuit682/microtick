@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Plan } from "@domain";
+import { Money, Plan } from "@domain";
 import { ValidationError } from "@shared";
 
 describe("Plan", () => {
@@ -8,7 +8,7 @@ describe("Plan", () => {
     const plan = new Plan({
       id: "starter-30",
       name: "Starter",
-      price: 5,
+      price: Money.fromKES(500),
       duration: 30,
       active: true,
     });
@@ -21,7 +21,7 @@ describe("Plan", () => {
       new Plan({
         id: "starter-30",
         name: "Starter",
-        price: 0,
+        price: Money.fromKES(0),
         duration: 30,
         active: true,
       });
