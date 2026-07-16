@@ -1,4 +1,5 @@
-import { ValidationError, ErrorCode } from "@shared";
+import { PaymentIntent } from "@domain";
+import { ErrorCode, ValidationError } from "@shared";
 
 import type { PaymentGateway } from "../payment/PaymentGateway.js";
 import type { PlanRepository } from "./PlanRepository.js";
@@ -14,9 +15,12 @@ export class PurchasePlan {
     private readonly paymentGateway: PaymentGateway,
   ) {}
 
-  async execute(command: PurchasePlanCommand): Promise<void> {
+  async execute(command: PurchasePlanCommand): Promise<PaymentIntent> {
+    // Retrieve the requested plan.
     const plan = await this.planRepository.findById(command.planId);
 
+    // Business Rule:
+    // A customer cannot purchase a plan that does not exist.
     if (plan === null) {
       throw new ValidationError(
         ErrorCode.PLAN_NOT_FOUND,
@@ -27,6 +31,8 @@ export class PurchasePlan {
       );
     }
 
+    // Business Rule:
+    // A customer cannot purchase an inactive plan.
     if (!plan.active) {
       throw new ValidationError(
         ErrorCode.PLAN_INACTIVE,
@@ -37,10 +43,21 @@ export class PurchasePlan {
       );
     }
 
-    await this.paymentGateway.requestPayment({
-      phoneNumber: command.phoneNumber,
+    // Create the business representation of this payment request.
+    const paymentIntent = new PaymentIntent({
       amount: plan.price,
+      phoneNumber: command.phoneNumber,
+    });
+
+    // Ask the configured payment provider to request payment.
+    await this.paymentGateway.requestPayment({
+      amount: paymentIntent.amount,
+      phoneNumber: paymentIntent.phoneNumber,
       reference: plan.id,
     });
+
+    // Return the PaymentIntent so that the caller can
+    // continue tracking the payment lifecycle.
+    return paymentIntent;
   }
 }

@@ -92,4 +92,30 @@ it("should reject purchasing a non-existent plan", async () => {
     }),
   ).rejects.toThrow(ValidationError);
 });
+it("should return a payment intent when requesting payment", async () => {
+  // Given
+  const repository = new MemoryPlanRepository();
+  const paymentGateway = new FakePaymentGateway();
+
+  const createPlan = new CreatePlan(repository);
+
+  await createPlan.execute({
+    id: "starter-30",
+    name: "Starter",
+    price: 500,
+    duration: 30,
+    active: true,
+  });
+
+  const purchasePlan = new PurchasePlan(repository, paymentGateway);
+
+  // When
+  const paymentIntent = await purchasePlan.execute({
+    planId: "starter-30",
+    phoneNumber: "254712345678",
+  });
+
+  // Then
+  expect(paymentIntent).toBeDefined();
+});
 });
