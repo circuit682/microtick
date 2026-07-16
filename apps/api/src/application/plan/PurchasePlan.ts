@@ -1,5 +1,7 @@
-import type { PlanRepository } from "./PlanRepository.js";
+import { ValidationError, ErrorCode } from "@shared";
+
 import type { PaymentGateway } from "../payment/PaymentGateway.js";
+import type { PlanRepository } from "./PlanRepository.js";
 
 export interface PurchasePlanCommand {
   planId: string;
@@ -16,7 +18,23 @@ export class PurchasePlan {
     const plan = await this.planRepository.findById(command.planId);
 
     if (plan === null) {
-      return;
+      throw new ValidationError(
+        ErrorCode.PLAN_NOT_FOUND,
+        "The requested plan does not exist.",
+        {
+          planId: command.planId,
+        },
+      );
+    }
+
+    if (!plan.active) {
+      throw new ValidationError(
+        ErrorCode.PLAN_INACTIVE,
+        "Inactive plans cannot be purchased.",
+        {
+          planId: plan.id,
+        },
+      );
     }
 
     await this.paymentGateway.requestPayment({
