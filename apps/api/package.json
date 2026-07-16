@@ -5,24 +5,14 @@
   "description": "Backend API for the MicroTick platform.",
   "type": "module",
   "scripts": {
-  "test": "vitest run",
-  "test:watch": "vitest",
-  "typecheck": "tsc --noEmit"
-},
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@types/node": "^26.1.1",
     "tsx": "^4.23.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
-  },
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@domain/*": ["apps/api/src/domain/*"],
-      "@application/*": ["apps/api/src/application/*"],
-      "@shared/*": ["apps/api/src/shared/*"]
-    }
   }
-
-
 }

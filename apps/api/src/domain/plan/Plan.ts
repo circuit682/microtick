@@ -27,6 +27,25 @@ export class Plan {
         },
       );
     }
+    if (props.name.trim().length === 0) {
+  throw new ValidationError(
+    ErrorCode.PLAN_INVALID_NAME,
+    "Plan name cannot be empty.",
+    {
+      attemptedName: props.name,
+    },
+  );
+}
+    if (props.duration <= 0) {
+      throw new ValidationError(
+        ErrorCode.PLAN_INVALID_DURATION,
+        "Plan duration must be greater than zero.",
+        {
+          attemptedDuration: props.duration,
+        },
+      );
+    }
+    
   }
 
   get id(): string {

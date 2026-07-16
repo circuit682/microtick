@@ -1,7 +1,21 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+
+    "paths": {
+      "@domain": ["./src/domain/index.ts"],
+      "@domain/*": ["./src/domain/*"],
+
+      "@application": ["./src/application/index.ts"],
+      "@application/*": ["./src/application/*"],
+
+      "@infrastructure": ["./src/infrastructure/index.ts"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+
+      "@shared": ["./src/shared/index.ts"],
+      "@shared/*": ["./src/shared/*"]
+    }
   },
   "include": [
     "src",

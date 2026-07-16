@@ -6,18 +6,17 @@
     "moduleResolution": "NodeNext",
 
     "paths": {
-      "@domain": [
-        "./apps/api/src/domain/index.ts"
-      ],
-      "@application": [
-        "./apps/api/src/application/index.ts"
-      ],
-      "@infrastructure": [
-        "./apps/api/src/infrastructure/index.ts"
-      ],
-      "@shared": [
-        "./apps/api/src/shared/index.ts"
-      ]
+      "@domain": ["./apps/api/src/domain/index.ts"],
+      "@domain/*": ["./apps/api/src/domain/*"],
+
+      "@application": ["./apps/api/src/application/index.ts"],
+      "@application/*": ["./apps/api/src/application/*"],
+
+      "@infrastructure": ["./apps/api/src/infrastructure/index.ts"],
+      "@infrastructure/*": ["./apps/api/src/infrastructure/*"],
+
+      "@shared": ["./apps/api/src/shared/index.ts"],
+      "@shared/*": ["./apps/api/src/shared/*"]
     },
 
     "strict": true,
