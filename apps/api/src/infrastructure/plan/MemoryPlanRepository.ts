@@ -7,4 +7,7 @@ export class MemoryPlanRepository implements PlanRepository {
   async save(plan: Plan): Promise<void> {
     this.plans.set(plan.id, plan);
   }
+  async findById(id: string): Promise<Plan | null> {
+    return this.plans.get(id) ?? null;
+  }
 }
