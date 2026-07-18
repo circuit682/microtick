@@ -4,12 +4,24 @@ import type {
   PaymentRequest,
 } from "@application/payment/PaymentGateway.js";
 
+interface TinyPesaGatewayConfig {
+  apiKey: string;
+  baseUrl: string;
+}
+
 export class TinyPesaGateway implements PaymentGateway {
+  private readonly config: TinyPesaGatewayConfig;
+
+  constructor(config: TinyPesaGatewayConfig) {
+    this.config = Object.freeze({ ...config });
+  }
+
   async requestPayment(
     request: PaymentRequest,
   ): Promise<PaymentGatewayResponse> {
     throw new Error("Not implemented.");
   }
+
   static normalizePhoneNumber(phone: string): string {
     let msisdn = phone.replace(/\s+/g, "").replace(/[^0-9]/g, "");
 
@@ -23,10 +35,12 @@ export class TinyPesaGateway implements PaymentGateway {
 
     return msisdn;
   }
+
   static buildPaymentPayload(request: PaymentRequest) {
     return {
       amount: request.amount.amount,
       msisdn: TinyPesaGateway.normalizePhoneNumber(request.phoneNumber),
+      account_no: request.reference,
     };
   }
 }

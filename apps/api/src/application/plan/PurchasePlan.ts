@@ -50,10 +50,12 @@ export class PurchasePlan {
     });
 
     // Ask the configured payment provider to request payment.
+
+    const paymentReference = plan.id;
     await this.paymentGateway.requestPayment({
       amount: paymentIntent.amount,
       phoneNumber: paymentIntent.phoneNumber,
-      reference: plan.id,
+      reference: paymentReference,
     });
 
     // Return the PaymentIntent so that the caller can

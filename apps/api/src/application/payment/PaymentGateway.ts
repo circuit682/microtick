@@ -3,7 +3,7 @@ import { Money } from "@domain";
 export interface PaymentRequest {
   phoneNumber: string;
   amount: Money;
-  // reference: string;
+  reference: string;
 }
 
 export interface PaymentGateway {
