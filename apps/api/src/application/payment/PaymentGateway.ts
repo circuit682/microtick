@@ -3,9 +3,13 @@ import { Money } from "@domain";
 export interface PaymentRequest {
   phoneNumber: string;
   amount: Money;
-  reference: string;
+  // reference: string;
 }
 
 export interface PaymentGateway {
-  requestPayment(request: PaymentRequest): Promise<void>;
+  requestPayment(request: PaymentRequest): Promise<PaymentGatewayResponse>;
+}
+
+export interface PaymentGatewayResponse {
+  providerRequestId: string;
 }

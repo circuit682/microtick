@@ -1,4 +1,5 @@
 import { Money } from "../money/index.js";
+import { PaymentStatus } from "./PaymentStatus.js";
 
 export interface PaymentIntentProps {
   amount: Money;
@@ -6,9 +7,11 @@ export interface PaymentIntentProps {
 }
 
 export class PaymentIntent {
-  constructor(
-    private readonly props: PaymentIntentProps,
-  ) {}
+  private readonly props: PaymentIntentProps;
+
+  constructor(props: PaymentIntentProps) {
+    this.props = Object.freeze({ ...props });
+  }
 
   get amount(): Money {
     return this.props.amount;
@@ -16,5 +19,9 @@ export class PaymentIntent {
 
   get phoneNumber(): string {
     return this.props.phoneNumber;
+  }
+
+  get status(): PaymentStatus {
+    return PaymentStatus.CREATED;
   }
 }
