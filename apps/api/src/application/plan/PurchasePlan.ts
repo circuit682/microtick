@@ -1,7 +1,7 @@
 import { PaymentIntent } from "@domain";
 import { ErrorCode, ValidationError } from "@shared";
 
-import type { PaymentGateway } from "../payment/PaymentGateway.js";
+import { InitiatePayment } from "../payment/InitiatePayment.js";
 import type { PlanRepository } from "./PlanRepository.js";
 
 export interface PurchasePlanCommand {
@@ -12,7 +12,7 @@ export interface PurchasePlanCommand {
 export class PurchasePlan {
   constructor(
     private readonly planRepository: PlanRepository,
-    private readonly paymentGateway: PaymentGateway,
+    private readonly initiatePayment: InitiatePayment,
   ) {}
 
   async execute(command: PurchasePlanCommand): Promise<PaymentIntent> {
@@ -53,12 +53,8 @@ export class PurchasePlan {
       reference: paymentReference,
     });
 
-    // Ask the configured payment provider to request payment.
-    await this.paymentGateway.requestPayment({
-      amount: paymentIntent.amount,
-      phoneNumber: paymentIntent.phoneNumber,
-      reference: paymentIntent.reference,
-    });
+    // Initiate payment through the dedicated application service.
+    await this.initiatePayment.execute(paymentIntent);
 
     // Return the PaymentIntent so that the caller can
     // continue tracking the payment lifecycle.
