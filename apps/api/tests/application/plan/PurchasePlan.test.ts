@@ -116,7 +116,7 @@ describe("PurchasePlan", () => {
     });
   });
 
-  it("should return a payment intent when requesting payment", async () => {
+  it("should return the purchase plan result", async () => {
     // Given
     const repository = new MemoryPlanRepository();
 
@@ -139,12 +139,15 @@ describe("PurchasePlan", () => {
     );
 
     // When
-    const paymentIntent = await purchasePlan.execute({
-      planId: "starter-30",
-      phoneNumber: "254712345678",
-    });
+    const result = await purchasePlan.execute({
+  planId: "starter-30",
+  phoneNumber: "254712345678",
+});
 
-    // Then
-    expect(paymentIntent).toBeDefined();
+expect(result.paymentIntent).toBeDefined();
+
+expect(result.providerRequestId).toBeDefined();
+
+expect(result.checkoutUrl).toBeDefined();
   });
 });

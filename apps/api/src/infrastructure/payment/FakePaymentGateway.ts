@@ -13,7 +13,8 @@ export class FakePaymentGateway implements PaymentGateway {
     this.lastRequest = request;
 
     return {
-      providerRequestId: "fake-provider-request-id",
+      providerRequestId: "fake-request-id",
+      checkoutUrl: "https://checkout.example.test",
     };
   }
 }

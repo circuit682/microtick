@@ -15,7 +15,10 @@
       "@infrastructure/*": ["./src/infrastructure/*"],
 
       "@shared": ["./src/shared/index.ts"],
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": ["./src/shared/*"],
+
+      "@http": ["./src/http/index.ts"],
+      "@http/*": ["./src/http/*"]
     }
   },
   "include": [

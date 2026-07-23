@@ -7,9 +7,12 @@ export interface PaymentRequest {
 }
 
 export interface PaymentGateway {
-  requestPayment(request: PaymentRequest): Promise<PaymentGatewayResponse>;
+  requestPayment(
+    request: PaymentRequest,
+  ): Promise<PaymentGatewayResponse>;
 }
 
 export interface PaymentGatewayResponse {
   providerRequestId: string;
+  checkoutUrl: string;
 }

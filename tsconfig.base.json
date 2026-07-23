@@ -16,7 +16,10 @@
       "@infrastructure/*": ["./apps/api/src/infrastructure/*"],
 
       "@shared": ["./apps/api/src/shared/index.ts"],
-      "@shared/*": ["./apps/api/src/shared/*"]
+      "@shared/*": ["./apps/api/src/shared/*"],
+
+      "@http": ["./apps/api/src/http/index.ts"],
+      "@http/*": ["./apps/api/src/http/*"]
     },
 
     "strict": true,

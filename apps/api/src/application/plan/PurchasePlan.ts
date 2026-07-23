@@ -3,6 +3,7 @@ import { ErrorCode, ValidationError } from "@shared";
 
 import { InitiatePayment } from "../payment/InitiatePayment.js";
 import type { PlanRepository } from "./PlanRepository.js";
+import type { PurchasePlanResult } from "./PurchasePlanResult.js";
 
 export interface PurchasePlanCommand {
   planId: string;
@@ -15,7 +16,9 @@ export class PurchasePlan {
     private readonly initiatePayment: InitiatePayment,
   ) {}
 
-  async execute(command: PurchasePlanCommand): Promise<PaymentIntent> {
+  async execute(
+    command: PurchasePlanCommand,
+  ): Promise<PurchasePlanResult> {
     // Retrieve the requested plan.
     const plan = await this.planRepository.findById(command.planId);
 
@@ -53,11 +56,15 @@ export class PurchasePlan {
       reference: paymentReference,
     });
 
-    // Initiate payment through the dedicated application service.
-    await this.initiatePayment.execute(paymentIntent);
+    // Initiate payment through the payment gateway.
+    const payment = await this.initiatePayment.execute(
+      paymentIntent,
+    );
 
-    // Return the PaymentIntent so that the caller can
-    // continue tracking the payment lifecycle.
-    return paymentIntent;
+    return {
+      paymentIntent,
+      providerRequestId: payment.providerRequestId,
+      checkoutUrl: payment.checkoutUrl,
+    };
   }
 }
