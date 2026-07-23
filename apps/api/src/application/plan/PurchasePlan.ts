@@ -43,19 +43,21 @@ export class PurchasePlan {
       );
     }
 
+    // Create a unique business reference for this payment.
+    const paymentReference = plan.id;
+
     // Create the business representation of this payment request.
     const paymentIntent = new PaymentIntent({
       amount: plan.price,
       phoneNumber: command.phoneNumber,
+      reference: paymentReference,
     });
 
     // Ask the configured payment provider to request payment.
-
-    const paymentReference = plan.id;
     await this.paymentGateway.requestPayment({
       amount: paymentIntent.amount,
       phoneNumber: paymentIntent.phoneNumber,
-      reference: paymentReference,
+      reference: paymentIntent.reference,
     });
 
     // Return the PaymentIntent so that the caller can
