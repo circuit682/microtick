@@ -1,6 +1,6 @@
 import Fastify from "fastify";
 
-import { createIntaSendWebhookController } from "./composition/payment.js";
+import { createIntaSendWebhookController, createPurchasePaymentController } from "./composition/payment.js";
 import { createPaymentRoutes } from "./http/payment/routes/paymentRoutes.js";
 
 export function createServer() {
@@ -8,12 +8,18 @@ export function createServer() {
     logger: true,
   });
 
-  const intaSendWebhookController =
-    createIntaSendWebhookController();
+  const purchasePaymentController =
+  createPurchasePaymentController();
 
-  server.register(
-    createPaymentRoutes(intaSendWebhookController),
-  );
+const intaSendWebhookController =
+  createIntaSendWebhookController();
+
+server.register(
+  createPaymentRoutes(purchasePaymentController, intaSendWebhookController),
+  {
+    prefix: "/payments",
+  },
+);
 
   return server;
 }

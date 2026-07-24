@@ -1,25 +1,27 @@
 import type { FastifyInstance } from "fastify";
 
-import { IntaSendWebhookController } from "@http/payment/controller/IntaSendWebhookController.js";
-import { IntaSendWebhookBody } from "@infrastructure/payment/IntaSendWebhook.types.js";
-import { intaSendWebhookSchema } from "@infrastructure/payment/IntaSendWebhook.schema.js";
+import { IntaSendWebhookController } from "../controller/IntaSendWebhookController.js";
+import { PurchasePaymentController } from "../controller/PurchasePaymentController.js";
 
 export function createPaymentRoutes(
+  purchasePaymentController: PurchasePaymentController,
   intaSendWebhookController: IntaSendWebhookController,
 ) {
-  return async function registerPaymentRoutes(
+  return async function paymentRoutes(
     server: FastifyInstance,
   ): Promise<void> {
-   server.post<{
-     Body: IntaSendWebhookBody;
-   }>(
-     "/payments/intasend/webhook",
-     {
-       schema: intaSendWebhookSchema,
-     },
-     async (request, reply) => {
-       await intaSendWebhookController.handle(request, reply);
-     },
-   );
+    server.post(
+      "/purchase",
+      purchasePaymentController.handle.bind(
+        purchasePaymentController,
+      ),
+    );
+
+    server.post(
+      "/intasend/webhook",
+      intaSendWebhookController.handle.bind(
+        intaSendWebhookController,
+      ),
+    );
   };
 }

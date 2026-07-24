@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "types": ["vitest/globals"],
+    "types": ["node", "vitest/globals"],
 
     "paths": {
       "@domain": ["./src/domain/index.ts"],
@@ -18,12 +18,14 @@
       "@shared/*": ["./src/shared/*"],
 
       "@http": ["./src/http/index.ts"],
-      "@http/*": ["./src/http/*"]
+      "@http/*": ["./src/http/*"],
+      "@config/*": ["./src/config/*"]
     }
   },
   "include": [
     "src",
-    "tests"
+    "tests",
+    "prisma.config.ts"
   ]
 }
 

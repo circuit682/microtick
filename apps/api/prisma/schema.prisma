@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  priceMinor  Int
+  currency    String
+  duration    Int
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  paymentIntents PaymentIntent[]
+}
+
+model PaymentIntent {
+  id                 String   @id @default(cuid())
+
+  planId             String
+  plan               Plan     @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  email              String
+  phoneNumber        String
+
+  amountMinor        Int
+  currency           String
+
+  status             String
+
+  providerReference  String?
+  checkoutUrl        String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

@@ -7,8 +7,10 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      "@domain": resolve(root, "src/domain"),
       "@application": resolve(root, "src/application"),
+      "@config": resolve(root, "src/config"),
+      "@domain": resolve(root, "src/domain"),
+      "@http": resolve(root, "src/http"),
       "@infrastructure": resolve(root, "src/infrastructure"),
       "@shared": resolve(root, "src/shared"),
     },
