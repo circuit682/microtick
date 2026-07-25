@@ -19,7 +19,8 @@
 
       "@http": ["./src/http/index.ts"],
       "@http/*": ["./src/http/*"],
-      "@config/*": ["./src/config/*"]
+      "@config/*": ["./src/config/*"],
+      "@generated/*": ["./src/generated/*"]
     }
   },
   "include": [
