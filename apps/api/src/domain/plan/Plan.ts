@@ -18,7 +18,7 @@ export class Plan {
   }
 
   private validate(props: PlanProps): void {
-    if (props.price.isLessThanOrEqualTo(Money.fromKES(0))) {
+    if (props.price.isLessThanOrEqualTo(Money.fromMinorUnits(0))) {
       throw new ValidationError(
         ErrorCode.PLAN_INVALID_PRICE,
         "Plan price must be greater than zero.",

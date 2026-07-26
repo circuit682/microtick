@@ -1,57 +1,93 @@
 import { ValidationError, ErrorCode } from "@shared";
 
 export class Money {
-  private constructor(private readonly _amount: number) {}
+  private constructor(
+    private readonly _minorUnits: number,
+  ) {}
 
-  static fromKES(amount: number): Money {
-    if (!Number.isFinite(amount)) {
+  static fromMinorUnits(
+    minorUnits: number,
+  ): Money {
+    if (!Number.isFinite(minorUnits)) {
       throw new ValidationError(
         ErrorCode.MONEY_INVALID_AMOUNT,
-        "Money amount must be a finite number.",
+        "Money minor units must be a finite number.",
         {
-          attemptedAmount: amount,
+          attemptedMinorUnits: minorUnits,
         },
       );
     }
 
-    if (amount < 0) {
+    if (!Number.isInteger(minorUnits)) {
+      throw new ValidationError(
+        ErrorCode.MONEY_INVALID_AMOUNT,
+        "Money minor units must be a whole number.",
+        {
+          attemptedMinorUnits: minorUnits,
+        },
+      );
+    }
+
+    if (minorUnits < 0) {
       throw new ValidationError(
         ErrorCode.MONEY_NEGATIVE_AMOUNT,
-        "Money amount cannot be negative.",
+        "Money minor units cannot be negative.",
         {
-          attemptedAmount: amount,
+          attemptedMinorUnits: minorUnits,
         },
       );
     }
 
-    return new Money(amount);
+    return new Money(minorUnits);
   }
 
-  get amount(): number {
-    return this._amount;
+  get minorUnits(): number {
+    return this._minorUnits;
   }
+
   equals(other: Money): boolean {
-    return this.amount === other.amount;
+    return this.minorUnits === other.minorUnits;
   }
+
   add(other: Money): Money {
-    return Money.fromKES(this.amount + other.amount);
+    return Money.fromMinorUnits(
+      this.minorUnits + other.minorUnits,
+    );
   }
+
   subtract(other: Money): Money {
-    return Money.fromKES(this.amount - other.amount);
+    return Money.fromMinorUnits(
+      this.minorUnits - other.minorUnits,
+    );
   }
+
   isZero(): boolean {
-    return this.amount === 0;
+    return this.minorUnits === 0;
   }
+
   isGreaterThan(other: Money): boolean {
-    return this.amount > other.amount;
+    return this.minorUnits > other.minorUnits;
   }
+
   isLessThan(other: Money): boolean {
-    return this.amount < other.amount;
+    return this.minorUnits < other.minorUnits;
   }
-  isGreaterThanOrEqualTo(other: Money): boolean {
-    return this.isGreaterThan(other) || this.equals(other);
+
+  isGreaterThanOrEqualTo(
+    other: Money,
+  ): boolean {
+    return (
+      this.isGreaterThan(other) ||
+      this.equals(other)
+    );
   }
-  isLessThanOrEqualTo(other: Money): boolean {
-    return this.isLessThan(other) || this.equals(other);
+
+  isLessThanOrEqualTo(
+    other: Money,
+  ): boolean {
+    return (
+      this.isLessThan(other) ||
+      this.equals(other)
+    );
   }
 }

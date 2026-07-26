@@ -15,10 +15,7 @@ model Plan {
   id          String   @id @default(cuid())
 
   name        String
-
   priceMinor  Int
-  currency    String
-
   duration    Int
   active      Boolean  @default(true)
 
@@ -38,7 +35,6 @@ model PaymentIntent {
   phoneNumber        String
 
   amountMinor        Int
-  currency           String
 
   status             String
 

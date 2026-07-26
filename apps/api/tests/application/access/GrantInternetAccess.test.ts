@@ -10,7 +10,7 @@ describe("GrantInternetAccess", () => {
     const plan = new Plan({
       id: "starter-30",
       name: "Starter",
-      price: Money.fromKES(500),
+      price: Money.fromMinorUnits(500),
       duration: 30,
       active: true,
     });
