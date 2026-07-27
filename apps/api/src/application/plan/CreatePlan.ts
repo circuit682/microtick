@@ -1,4 +1,4 @@
-import { Money, Plan } from "@domain";
+import { Money, Plan, PlanType } from "@domain";
 
 import type { IdentifierGenerator } from "@shared/identity/IdentifierGenerator.js";
 
@@ -7,7 +7,8 @@ import type { PlanRepository } from "./PlanRepository.js";
 export interface CreatePlanCommand {
   name: string;
   price: number;
-  duration: number;
+  type: PlanType;
+  allowanceMinutes: number;
 }
 
 export class CreatePlan {
@@ -21,7 +22,8 @@ export class CreatePlan {
       id: this.identifierGenerator.generate(),
       name: command.name,
       price: Money.fromMinorUnits(command.price),
-      duration: command.duration,
+      type: command.type,
+      allowanceMinutes: command.allowanceMinutes,
     });
 
     await this.planRepository.save(plan);

@@ -5,18 +5,42 @@ import { PaymentDomainError } from "./PaymentDomainError.js";
 import { PaymentStatus } from "./PaymentStatus.js";
 
 export interface PaymentIntentProps {
+  id: string;
+  planId: string;
+  amount: Money;
+  phoneNumber: string;
+  reference: string;
+  status: PaymentStatus;
+}
+
+export interface CreatePaymentIntentProps {
+  id: string;
+  planId: string;
   amount: Money;
   phoneNumber: string;
   reference: string;
 }
 
 export class PaymentIntent {
-  private readonly props: PaymentIntentProps;
+  private constructor(private readonly props: PaymentIntentProps) {}
 
-  private _status = PaymentStatus.CREATED;
+  static create(props: CreatePaymentIntentProps): PaymentIntent {
+    return new PaymentIntent({
+      ...props,
+      status: PaymentStatus.CREATED,
+    });
+  }
 
-  constructor(props: PaymentIntentProps) {
-    this.props = Object.freeze({ ...props });
+  static reconstitute(props: PaymentIntentProps): PaymentIntent {
+    return new PaymentIntent(props);
+  }
+
+  get id(): string {
+    return this.props.id;
+  }
+
+  get planId(): string {
+    return this.props.planId;
   }
 
   get amount(): Money {
@@ -32,46 +56,46 @@ export class PaymentIntent {
   }
 
   get status(): PaymentStatus {
-    return this._status;
+    return this.props.status;
   }
 
   markPending(): void {
-    if (this._status !== PaymentStatus.CREATED) {
+    if (this.props.status !== PaymentStatus.CREATED) {
       throw new PaymentDomainError(
         ErrorCode.PAYMENT_NOT_CREATED,
         "Only newly created payments can become pending.",
       );
     }
 
-    this._status = PaymentStatus.PENDING;
+    this.props.status = PaymentStatus.PENDING;
   }
 
   confirm(): void {
-    if (this._status === PaymentStatus.COMPLETED) {
+    if (this.props.status === PaymentStatus.COMPLETED) {
       throw new PaymentDomainError(
         ErrorCode.PAYMENT_ALREADY_COMPLETED,
         "Payment has already been completed.",
       );
     }
 
-    if (this._status !== PaymentStatus.PENDING) {
+    if (this.props.status !== PaymentStatus.PENDING) {
       throw new PaymentDomainError(
         ErrorCode.PAYMENT_NOT_PENDING,
         "Only pending payments can be confirmed.",
       );
     }
 
-    this._status = PaymentStatus.COMPLETED;
+    this.props.status = PaymentStatus.COMPLETED;
   }
 
   fail(): void {
-    if (this._status !== PaymentStatus.PENDING) {
+    if (this.props.status !== PaymentStatus.PENDING) {
       throw new PaymentDomainError(
         ErrorCode.PAYMENT_NOT_PENDING,
         "Only pending payments can fail.",
       );
     }
 
-    this._status = PaymentStatus.FAILED;
+    this.props.status = PaymentStatus.FAILED;
   }
 }

@@ -2,18 +2,22 @@ import { ErrorCode, ValidationError } from "@shared";
 
 import { Money } from "../money/index.js";
 
+import { PlanType } from "./PlanType.js";
+
 export interface CreatePlanProps {
   id: string;
   name: string;
   price: Money;
-  duration: number;
+  type: PlanType;
+  allowanceMinutes: number;
 }
 
 export interface PlanProps {
   id: string;
   name: string;
   price: Money;
-  duration: number;
+  type: PlanType;
+  allowanceMinutes: number;
   active: boolean;
 }
 
@@ -85,7 +89,11 @@ export class Plan {
    * Ensures the aggregate always remains in a valid state.
    */
   private validateInvariants(props: PlanProps): void {
-    if (props.price.isLessThanOrEqualTo(Money.fromMinorUnits(0))) {
+    if (
+      props.price.isLessThanOrEqualTo(
+        Money.fromMinorUnits(0),
+      )
+    ) {
       throw new ValidationError(
         ErrorCode.PLAN_INVALID_PRICE,
         "Plan price must be greater than zero.",
@@ -105,12 +113,13 @@ export class Plan {
       );
     }
 
-    if (props.duration <= 0) {
+    if (props.allowanceMinutes <= 0) {
       throw new ValidationError(
-        ErrorCode.PLAN_INVALID_DURATION,
-        "Plan duration must be greater than zero.",
+        ErrorCode.PLAN_INVALID_ALLOWANCE,
+        "Plan allowance must be greater than zero.",
         {
-          attemptedDuration: props.duration,
+          attemptedAllowanceMinutes:
+            props.allowanceMinutes,
         },
       );
     }
@@ -128,8 +137,12 @@ export class Plan {
     return this.props.price;
   }
 
-  get duration(): number {
-    return this.props.duration;
+  get type(): PlanType {
+    return this.props.type;
+  }
+
+  get allowanceMinutes(): number {
+    return this.props.allowanceMinutes;
   }
 
   get active(): boolean {

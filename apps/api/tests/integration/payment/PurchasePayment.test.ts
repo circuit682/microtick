@@ -4,9 +4,10 @@ import { createServer } from "../../../src/server.js";
 
 import { CreatePlan } from "@application/plan/CreatePlan.js";
 
+import { PlanType } from "@domain";
+import { prisma } from "@infrastructure/database/prisma.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 import { PrismaPlanRepository } from "@infrastructure/plan/PrismaPlanRepository.js";
-import { prisma } from "@infrastructure/database/prisma.js";
 
 describe("POST /payments/purchase", () => {
   beforeEach(async () => {
@@ -36,9 +37,10 @@ describe("POST /payments/purchase", () => {
     );
 
     const createdPlan = await createPlan.execute({
-      name: "Starter",
+      name: "Quiky",
       price: 500,
-      duration: 30,
+      type: PlanType.USAGE,
+      allowanceMinutes: 30,
     });
 
     const server = createServer();

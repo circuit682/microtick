@@ -1,6 +1,8 @@
 import { PaymentIntent } from "@domain";
 import { ErrorCode, ValidationError } from "@shared";
 
+import type { IdentifierGenerator } from "@shared/identity/IdentifierGenerator.js";
+
 import { InitiatePayment } from "../payment/InitiatePayment.js";
 import type { PlanRepository } from "./PlanRepository.js";
 import type { PurchasePlanResult } from "./PurchasePlanResult.js";
@@ -14,11 +16,10 @@ export class PurchasePlan {
   constructor(
     private readonly planRepository: PlanRepository,
     private readonly initiatePayment: InitiatePayment,
+    private readonly identifierGenerator: IdentifierGenerator,
   ) {}
 
-  async execute(
-    command: PurchasePlanCommand,
-  ): Promise<PurchasePlanResult> {
+  async execute(command: PurchasePlanCommand): Promise<PurchasePlanResult> {
     // Retrieve the requested plan.
     const plan = await this.planRepository.findById(command.planId);
 
@@ -46,20 +47,22 @@ export class PurchasePlan {
       );
     }
 
-    // Create a unique business reference for this payment.
-    const paymentReference = plan.id;
+    // Generate identifiers for this payment.
+    const paymentId = this.identifierGenerator.generate();
+
+    const paymentReference = this.identifierGenerator.generate();
 
     // Create the business representation of this payment request.
-    const paymentIntent = new PaymentIntent({
+    const paymentIntent = PaymentIntent.create({
+      id: paymentId,
+      planId: plan.id,
       amount: plan.price,
       phoneNumber: command.phoneNumber,
       reference: paymentReference,
     });
 
     // Initiate payment through the payment gateway.
-    const payment = await this.initiatePayment.execute(
-      paymentIntent,
-    );
+    const payment = await this.initiatePayment.execute(paymentIntent);
 
     return {
       paymentIntent,

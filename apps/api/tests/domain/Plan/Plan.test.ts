@@ -1,25 +1,42 @@
 import { describe, expect, it } from "vitest";
 
-import { Money, Plan } from "@domain";
+import { Money, Plan, PlanType } from "@domain";
 import { ValidationError } from "@shared";
 
 describe("Plan", () => {
   describe("Creation", () => {
-    it("creates a valid plan", () => {
+    it("creates a valid usage plan", () => {
       // Given
       const plan = Plan.create({
-        id: "starter-30",
-        name: "Starter",
+        id: "quiky-30",
+        name: "Quiky",
         price: Money.fromMinorUnits(500),
-        duration: 30,
+        type: PlanType.USAGE,
+        allowanceMinutes: 30,
       });
 
       // Then
-      expect(plan.id).toBe("starter-30");
-      expect(plan.name).toBe("Starter");
-      expect(plan.price).toEqual(Money.fromMinorUnits(500));
-      expect(plan.duration).toBe(30);
+      expect(plan.id).toBe("quiky-30");
+      expect(plan.name).toBe("Quiky");
+      expect(plan.price).toEqual(
+        Money.fromMinorUnits(500),
+      );
+      expect(plan.type).toBe(PlanType.USAGE);
+      expect(plan.allowanceMinutes).toBe(30);
       expect(plan.active).toBe(true);
+    });
+
+    it("creates a valid time plan", () => {
+      const plan = Plan.create({
+        id: "daily",
+        name: "Daily",
+        price: Money.fromMinorUnits(5000),
+        type: PlanType.TIME,
+        allowanceMinutes: 1440,
+      });
+
+      expect(plan.type).toBe(PlanType.TIME);
+      expect(plan.allowanceMinutes).toBe(1440);
     });
 
     it("should reject a plan with a zero price", () => {
@@ -28,7 +45,8 @@ describe("Plan", () => {
           id: "starter-30",
           name: "Starter",
           price: Money.fromMinorUnits(0),
-          duration: 30,
+          type: PlanType.USAGE,
+          allowanceMinutes: 30,
         });
       }).toThrow(ValidationError);
     });
@@ -39,7 +57,8 @@ describe("Plan", () => {
           id: "starter-30",
           name: "",
           price: Money.fromMinorUnits(500),
-          duration: 30,
+          type: PlanType.USAGE,
+          allowanceMinutes: 30,
         });
       }).toThrow(ValidationError);
     });
@@ -50,18 +69,20 @@ describe("Plan", () => {
           id: "starter-30",
           name: "     ",
           price: Money.fromMinorUnits(500),
-          duration: 30,
+          type: PlanType.USAGE,
+          allowanceMinutes: 30,
         });
       }).toThrow(ValidationError);
     });
 
-    it("should reject a plan with a duration less than or equal to zero", () => {
+    it("should reject a plan with a non-positive allowance", () => {
       expect(() => {
         Plan.create({
           id: "starter-30",
           name: "Starter",
           price: Money.fromMinorUnits(500),
-          duration: 0,
+          type: PlanType.USAGE,
+          allowanceMinutes: 0,
         });
       }).toThrow(ValidationError);
     });
@@ -70,36 +91,41 @@ describe("Plan", () => {
   describe("Reconstitution", () => {
     it("reconstitutes an existing active plan", () => {
       const plan = Plan.reconstitute({
-        id: "starter-30",
-        name: "Starter",
+        id: "quiky-30",
+        name: "Quiky",
         price: Money.fromMinorUnits(500),
-        duration: 30,
+        type: PlanType.USAGE,
+        allowanceMinutes: 30,
         active: true,
       });
 
       expect(plan.active).toBe(true);
+      expect(plan.type).toBe(PlanType.USAGE);
     });
 
     it("reconstitutes an existing inactive plan", () => {
       const plan = Plan.reconstitute({
-        id: "starter-30",
-        name: "Starter",
-        price: Money.fromMinorUnits(500),
-        duration: 30,
+        id: "daily",
+        name: "Daily",
+        price: Money.fromMinorUnits(5000),
+        type: PlanType.TIME,
+        allowanceMinutes: 1440,
         active: false,
       });
 
       expect(plan.active).toBe(false);
+      expect(plan.type).toBe(PlanType.TIME);
     });
   });
 
   describe("Lifecycle", () => {
     it("deactivates an active plan", () => {
       const plan = Plan.create({
-        id: "starter-30",
-        name: "Starter",
+        id: "quiky-30",
+        name: "Quiky",
         price: Money.fromMinorUnits(500),
-        duration: 30,
+        type: PlanType.USAGE,
+        allowanceMinutes: 30,
       });
 
       const inactivePlan = plan.deactivate();
@@ -111,10 +137,11 @@ describe("Plan", () => {
 
     it("activates an inactive plan", () => {
       const inactivePlan = Plan.reconstitute({
-        id: "starter-30",
-        name: "Starter",
+        id: "quiky-30",
+        name: "Quiky",
         price: Money.fromMinorUnits(500),
-        duration: 30,
+        type: PlanType.USAGE,
+        allowanceMinutes: 30,
         active: false,
       });
 
@@ -127,29 +154,27 @@ describe("Plan", () => {
 
     it("returns the same instance when activating an already active plan", () => {
       const plan = Plan.create({
-        id: "starter-30",
-        name: "Starter",
+        id: "quiky-30",
+        name: "Quiky",
         price: Money.fromMinorUnits(500),
-        duration: 30,
+        type: PlanType.USAGE,
+        allowanceMinutes: 30,
       });
 
-      const result = plan.activate();
-
-      expect(result).toBe(plan);
+      expect(plan.activate()).toBe(plan);
     });
 
     it("returns the same instance when deactivating an already inactive plan", () => {
       const plan = Plan.reconstitute({
-        id: "starter-30",
-        name: "Starter",
+        id: "quiky-30",
+        name: "Quiky",
         price: Money.fromMinorUnits(500),
-        duration: 30,
+        type: PlanType.USAGE,
+        allowanceMinutes: 30,
         active: false,
       });
 
-      const result = plan.deactivate();
-
-      expect(result).toBe(plan);
+      expect(plan.deactivate()).toBe(plan);
     });
   });
 });

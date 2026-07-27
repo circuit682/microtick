@@ -9,10 +9,11 @@ import {
 
 describe("PaymentIntent", () => {
   function createPaymentIntent(): PaymentIntent {
-    return new PaymentIntent({
+    return PaymentIntent.create({
+      id: "payment-intent-1",
       amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
-      reference: "plan-123",
+      reference: "payment-ref-123",
     });
   }
 

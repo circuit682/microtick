@@ -1,6 +1,6 @@
 import type { Plan as PrismaPlan } from "@generated/prisma/client.js";
 
-import { Money, Plan } from "@domain";
+import { Money, Plan, PlanType } from "@domain";
 
 export class PlanMapper {
   static toDomain(plan: PrismaPlan): Plan {
@@ -10,7 +10,8 @@ export class PlanMapper {
       price: Money.fromMinorUnits(
         plan.priceMinor,
       ),
-      duration: plan.duration,
+      type: plan.type as PlanType,
+      allowanceMinutes: plan.allowanceMinutes,
       active: plan.active,
     });
   }
@@ -21,14 +22,16 @@ export class PlanMapper {
     id: string;
     name: string;
     priceMinor: number;
-    duration: number;
+    type: PlanType;
+    allowanceMinutes: number;
     active: boolean;
   } {
     return {
       id: plan.id,
       name: plan.name,
       priceMinor: plan.price.minorUnits,
-      duration: plan.duration,
+      type: plan.type,
+      allowanceMinutes: plan.allowanceMinutes,
       active: plan.active,
     };
   }

@@ -5,7 +5,7 @@ import { ReceivePaymentConfirmation } from "@application/payment/ReceivePaymentC
 import { PurchasePlan } from "@application/plan/PurchasePlan.js";
 
 import { createIntaSendGateway } from "./infrastructure/intaSend.js";
-
+import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 import { PrismaPlanRepository } from "@infrastructure/plan/PrismaPlanRepository.js";
 
@@ -13,37 +13,31 @@ import { IntaSendWebhookController } from "@http/payment/controller/IntaSendWebh
 import { PurchasePaymentController } from "@http/payment/controller/PurchasePaymentController.js";
 
 export function createIntaSendWebhookController(): IntaSendWebhookController {
-  const paymentIntentRepository =
-    new MemoryPaymentIntentRepository();
+  const paymentIntentRepository = new MemoryPaymentIntentRepository();
 
-  const confirmPayment =
-    new ConfirmPayment(paymentIntentRepository);
+  const confirmPayment = new ConfirmPayment(paymentIntentRepository);
 
-  const receivePaymentConfirmation =
-    new ReceivePaymentConfirmation(confirmPayment);
-
-  return new IntaSendWebhookController(
-    receivePaymentConfirmation,
+  const receivePaymentConfirmation = new ReceivePaymentConfirmation(
+    confirmPayment,
   );
+
+  return new IntaSendWebhookController(receivePaymentConfirmation);
 }
 
 export function createPurchasePaymentController(): PurchasePaymentController {
-  const planRepository =
-    new PrismaPlanRepository();
+  const planRepository = new PrismaPlanRepository();
 
-  const paymentGateway =
-    createIntaSendGateway();
+  const paymentGateway = createIntaSendGateway();
 
-  const initiatePayment =
-    new InitiatePayment(paymentGateway);
+  const identifierGenerator = new UlidIdentifierGenerator();
 
-  const purchasePlan =
-    new PurchasePlan(
-      planRepository,
-      initiatePayment,
-    );
+  const initiatePayment = new InitiatePayment(paymentGateway);
 
-  return new PurchasePaymentController(
-    purchasePlan,
+  const purchasePlan = new PurchasePlan(
+    planRepository,
+    initiatePayment,
+    identifierGenerator,
   );
+
+  return new PurchasePaymentController(purchasePlan);
 }

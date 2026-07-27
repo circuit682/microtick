@@ -4,11 +4,11 @@ import { InitiatePayment } from "@application/payment/InitiatePayment.js";
 import { CreatePlan } from "@application/plan/CreatePlan.js";
 import { PurchasePlan } from "@application/plan/PurchasePlan.js";
 
-import { FakePaymentGateway } from "@infrastructure/payment/FakePaymentGateway.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
+import { FakePaymentGateway } from "@infrastructure/payment/FakePaymentGateway.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
-import { Money } from "@domain/money/index.js";
+import { Money, PlanType } from "@domain";
 import { ErrorCode, ValidationError } from "@shared";
 
 describe("PurchasePlan", () => {
@@ -23,12 +23,17 @@ describe("PurchasePlan", () => {
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
     const createdPlan = await createPlan.execute({
-      name: "Starter",
+      name: "Quiky",
       price: 500,
-      duration: 30,
+      type: PlanType.USAGE,
+      allowanceMinutes: 30,
     });
 
-    const purchasePlan = new PurchasePlan(repository, initiatePayment);
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
 
     // When
     await purchasePlan.execute({
@@ -45,7 +50,8 @@ describe("PurchasePlan", () => {
       paymentGateway.lastRequest?.amount.equals(Money.fromMinorUnits(500)),
     ).toBe(true);
 
-    expect(paymentGateway.lastRequest?.reference).toBe(createdPlan.id);
+    expect(paymentGateway.lastRequest?.reference).toBeDefined();
+    expect(paymentGateway.lastRequest?.reference).not.toBe(createdPlan.id);
   });
 
   it("should reject purchasing an inactive plan", async () => {
@@ -56,18 +62,24 @@ describe("PurchasePlan", () => {
     const initiatePayment = new InitiatePayment(paymentGateway);
 
     const identifierGenerator = new UlidIdentifierGenerator();
+
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
     const createdPlan = await createPlan.execute({
-      name: "Starter",
+      name: "Quiky",
       price: 500,
-      duration: 30,
+      type: PlanType.USAGE,
+      allowanceMinutes: 30,
     });
 
     const inactivePlan = createdPlan.deactivate();
     await repository.save(inactivePlan);
 
-    const purchasePlan = new PurchasePlan(repository, initiatePayment);
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
 
     // When / Then
     await expect(
@@ -94,7 +106,13 @@ describe("PurchasePlan", () => {
     const paymentGateway = new FakePaymentGateway();
     const initiatePayment = new InitiatePayment(paymentGateway);
 
-    const purchasePlan = new PurchasePlan(repository, initiatePayment);
+    const identifierGenerator = new UlidIdentifierGenerator();
+
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
 
     // When / Then
     await expect(
@@ -122,15 +140,21 @@ describe("PurchasePlan", () => {
     const initiatePayment = new InitiatePayment(paymentGateway);
 
     const identifierGenerator = new UlidIdentifierGenerator();
+
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
     const createdPlan = await createPlan.execute({
-      name: "Starter",
+      name: "Quiky",
       price: 500,
-      duration: 30,
+      type: PlanType.USAGE,
+      allowanceMinutes: 30,
     });
 
-    const purchasePlan = new PurchasePlan(repository, initiatePayment);
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
 
     // When
     const result = await purchasePlan.execute({

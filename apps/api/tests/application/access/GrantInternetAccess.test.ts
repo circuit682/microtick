@@ -2,17 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 
-
-import { InternetAccess, Money, Plan } from "@domain";
+import { Money, Plan, PlanType } from "@domain";
 
 describe("GrantInternetAccess", () => {
   it("grants internet access using the purchased plan duration", () => {
-    const plan = new Plan({
-      id: "starter-30",
-      name: "Starter",
+    const plan = Plan.create({
+      id: "daily",
+      name: "Daily",
       price: Money.fromMinorUnits(500),
-      duration: 30,
-      active: true,
+      type: PlanType.TIME,
+      allowanceMinutes: 30,
     });
 
     const grantedAt = new Date("2026-01-01T10:00:00Z");
@@ -27,8 +26,6 @@ describe("GrantInternetAccess", () => {
 
     expect(access.grantedAt).toEqual(grantedAt);
 
-    expect(access.expiresAt).toEqual(
-      new Date("2026-01-01T10:30:00Z"),
-    );
+    expect(access.expiresAt).toEqual(new Date("2026-01-01T10:30:00Z"));
   });
 });

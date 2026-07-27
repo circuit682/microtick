@@ -7,26 +7,61 @@ datasource db {
   provider = "postgresql"
 }
 
-model Plan {
-  id             String          @id
-  name           String
-  priceMinor     Int
-  duration       Int
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  active         Boolean         @default(true)
-  paymentIntents PaymentIntent[]
+enum PlanType {
+  TIME
+  USAGE
 }
+
+model Plan {
+  id               String          @id
+  name             String
+  priceMinor       Int
+  type             PlanType
+  allowanceMinutes Int
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  active           Boolean         @default(true)
+
+  paymentIntents   PaymentIntent[]
+  purchases        Purchase[]
+}
+
 model PaymentIntent {
-  id                String   @id @default(cuid())
+  id                String   @id
+
   planId            String
-  email             String
+  plan              Plan     @relation(fields: [planId], references: [id])
+
+  reference         String   @unique
+
   phoneNumber       String
+
   amountMinor       Int
+
   status            String
+
   providerReference String?
+
   checkoutUrl       String?
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  plan              Plan     @relation(fields: [planId], references: [id])
+}
+
+model Purchase {
+  id                String    @id
+  customerId        String
+
+  planId            String
+  plan              Plan      @relation(fields: [planId], references: [id])
+
+  planName          String
+  planPriceMinor    Int
+  planType          PlanType
+  allowanceMinutes  Int
+
+  purchasedAt       DateTime
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }

@@ -8,10 +8,11 @@ import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPay
 
 describe("ReceivePaymentConfirmation", () => {
   function createPendingPayment(): PaymentIntent {
-    const payment = new PaymentIntent({
+    const payment = PaymentIntent.create({
+      id: "payment-intent-1",
       amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
-      reference: "plan-123",
+      reference: "payment-ref-123",
     });
 
     payment.markPending();
@@ -28,19 +29,17 @@ describe("ReceivePaymentConfirmation", () => {
 
     const confirmPayment = new ConfirmPayment(repository);
 
-    const receivePaymentConfirmation =
-      new ReceivePaymentConfirmation(
-        confirmPayment,
-      );
+    const receivePaymentConfirmation = new ReceivePaymentConfirmation(
+      confirmPayment,
+    );
 
     // When
     await receivePaymentConfirmation.execute({
-      reference: "plan-123",
+      reference: "payment-ref-123",
     });
 
     // Then
-    const confirmed =
-      await repository.findByReference("plan-123");
+    const confirmed = await repository.findByReference("payment-ref-123");
 
     expect(confirmed?.status).toBe("COMPLETED");
   });
@@ -51,10 +50,9 @@ describe("ReceivePaymentConfirmation", () => {
 
     const confirmPayment = new ConfirmPayment(repository);
 
-    const receivePaymentConfirmation =
-      new ReceivePaymentConfirmation(
-        confirmPayment,
-      );
+    const receivePaymentConfirmation = new ReceivePaymentConfirmation(
+      confirmPayment,
+    );
 
     // When / Then
     await expect(
