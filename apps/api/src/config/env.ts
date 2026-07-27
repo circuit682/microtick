@@ -11,25 +11,29 @@ function requireEnv(name: string): string {
 }
 
 export const env = {
-  database: {
-    url: requireEnv("DATABASE_URL"),
+  get database() {
+    return {
+      url: requireEnv("DATABASE_URL"),
+    };
   },
 
-  intaSend: {
-    publishableKey: requireEnv(
-      "INTASEND_PUBLISHABLE_KEY",
-    ),
+  get intaSend() {
+    return {
+      publishableKey: requireEnv(
+        "INTASEND_PUBLISHABLE_KEY",
+      ),
 
-    baseUrl:
-      process.env.INTASEND_BASE_URL ??
-      "https://sandbox.intasend.com",
+      baseUrl:
+        process.env.INTASEND_BASE_URL ??
+        "https://sandbox.intasend.com",
 
-    host:
-      process.env.APP_HOST ??
-      "http://localhost:3000",
+      host:
+        process.env.APP_HOST ??
+        "http://localhost:3000",
 
-    redirectUrl:
-      process.env.PAYMENT_REDIRECT_URL ??
-      "http://localhost:3000/payment/complete",
+      redirectUrl:
+        process.env.PAYMENT_REDIRECT_URL ??
+        "http://localhost:3000/payment/complete",
+    };
   },
 };

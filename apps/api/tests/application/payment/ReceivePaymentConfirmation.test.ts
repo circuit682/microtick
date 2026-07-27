@@ -9,7 +9,7 @@ import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPay
 describe("ReceivePaymentConfirmation", () => {
   function createPendingPayment(): PaymentIntent {
     const payment = new PaymentIntent({
-      amount: Money.fromKES(500),
+      amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
       reference: "plan-123",
     });

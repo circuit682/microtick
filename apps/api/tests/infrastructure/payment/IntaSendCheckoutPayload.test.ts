@@ -16,7 +16,7 @@ describe("IntaSendCheckoutPayload", () => {
       const payload = IntaSendCheckoutPayload.from(
         {
           phoneNumber: "0712345678",
-          amount: Money.fromKES(500),
+          amount: Money.fromMinorUnits(500),
           reference: "plan-123",
         },
         config,
@@ -42,7 +42,7 @@ describe("IntaSendCheckoutPayload", () => {
       const payload = IntaSendCheckoutPayload.from(
         {
           phoneNumber: "254712345678",
-          amount: Money.fromKES(500),
+          amount: Money.fromMinorUnits(500),
           reference: "plan-123",
         },
         config,
@@ -55,7 +55,7 @@ describe("IntaSendCheckoutPayload", () => {
       const payload = IntaSendCheckoutPayload.from(
         {
           phoneNumber: "712345678",
-          amount: Money.fromKES(500),
+          amount: Money.fromMinorUnits(500),
           reference: "plan-123",
         },
         config,

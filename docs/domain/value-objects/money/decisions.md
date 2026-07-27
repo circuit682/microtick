@@ -50,7 +50,7 @@ Construction will be controlled through factory methods rather than public mutat
 Example:
 
 ```ts
-Money.fromKES(500)
+Money.fromMinorUnits(500)
 ```
 
 ### Rationale

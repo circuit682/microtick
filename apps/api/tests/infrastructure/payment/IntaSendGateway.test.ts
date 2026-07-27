@@ -26,7 +26,7 @@ describe("IntaSendGateway", () => {
 
       const request = {
         phoneNumber: "0712345678",
-        amount: Money.fromKES(500),
+        amount: Money.fromMinorUnits(500),
         reference: "plan-123",
       };
 
@@ -86,7 +86,7 @@ describe("IntaSendGateway", () => {
       await expect(
   gateway.requestPayment({
     phoneNumber: "0712345678",
-    amount: Money.fromKES(500),
+    amount: Money.fromMinorUnits(500),
     reference: "plan-123",
   }),
 ).rejects.toBeInstanceOf(IntaSendCheckoutError);
@@ -94,7 +94,7 @@ describe("IntaSendGateway", () => {
 await expect(
   gateway.requestPayment({
     phoneNumber: "0712345678",
-    amount: Money.fromKES(500),
+    amount: Money.fromMinorUnits(500),
     reference: "plan-123",
   }),
 ).rejects.toThrow("IntaSend checkout creation failed: 400 Invalid request");

@@ -50,10 +50,10 @@ export class TinyPesaGateway implements PaymentGateway {
   }
 
   static buildPaymentPayload(request: PaymentRequest) {
-    return {
-      amount: request.amount.amount,
-      msisdn: TinyPesaGateway.normalizePhoneNumber(request.phoneNumber),
-      account_no: request.reference,
-    };
-  }
+  return {
+    amount: request.amount.minorUnits,
+    msisdn: TinyPesaGateway.normalizePhoneNumber(request.phoneNumber),
+    account_no: request.reference,
+  };
+}
 }

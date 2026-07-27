@@ -1,7 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,35 +8,25 @@ datasource db {
 }
 
 model Plan {
-  id          String   @id @default(cuid())
-
-  name        String
-  priceMinor  Int
-  duration    Int
-  active      Boolean  @default(true)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id             String          @id
+  name           String
+  priceMinor     Int
+  duration       Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  active         Boolean         @default(true)
   paymentIntents PaymentIntent[]
 }
-
 model PaymentIntent {
-  id                 String   @id @default(cuid())
-
-  planId             String
-  plan               Plan     @relation(fields: [planId], references: [id], onDelete: Restrict)
-
-  email              String
-  phoneNumber        String
-
-  amountMinor        Int
-
-  status             String
-
-  providerReference  String?
-  checkoutUrl        String?
-
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String   @id @default(cuid())
+  planId            String
+  email             String
+  phoneNumber       String
+  amountMinor       Int
+  status            String
+  providerReference String?
+  checkoutUrl       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  plan              Plan     @relation(fields: [planId], references: [id])
 }

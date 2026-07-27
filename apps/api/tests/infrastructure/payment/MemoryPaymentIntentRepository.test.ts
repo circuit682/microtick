@@ -8,7 +8,7 @@ describe("MemoryPaymentIntentRepository", () => {
     const repository = new MemoryPaymentIntentRepository();
 
     const payment = new PaymentIntent({
-      amount: Money.fromKES(500),
+      amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
       reference: "plan-123",
     });
@@ -32,13 +32,13 @@ describe("MemoryPaymentIntentRepository", () => {
     const repository = new MemoryPaymentIntentRepository();
 
     const original = new PaymentIntent({
-      amount: Money.fromKES(500),
+      amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
       reference: "plan-123",
     });
 
     const replacement = new PaymentIntent({
-      amount: Money.fromKES(1000),
+      amount: Money.fromMinorUnits(1000),
       phoneNumber: "0799999999",
       reference: "plan-123",
     });

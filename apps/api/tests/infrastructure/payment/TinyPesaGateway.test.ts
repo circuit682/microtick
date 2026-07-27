@@ -28,7 +28,7 @@ describe("TinyPesaGateway", () => {
     it("should build the TinyPesa payment payload", () => {
       const payload = TinyPesaGateway.buildPaymentPayload({
         phoneNumber: "0712345678",
-        amount: Money.fromKES(500),
+        amount: Money.fromMinorUnits(500),
         reference: "plan-123",
       });
 
@@ -55,7 +55,7 @@ describe("TinyPesaGateway", () => {
 
       await gateway.requestPayment({
         phoneNumber: "0712345678",
-        amount: Money.fromKES(500),
+        amount: Money.fromMinorUnits(500),
         reference: "plan-123",
       });
 
@@ -85,7 +85,7 @@ it("should send the API key as a Bearer token", async () => {
 
   await gateway.requestPayment({
     phoneNumber: "0712345678",
-    amount: Money.fromKES(500),
+    amount: Money.fromMinorUnits(500),
     reference: "plan-123",
   });
 

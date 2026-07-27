@@ -3,6 +3,8 @@ import { PrismaClient } from "@generated/prisma/client.js";
 
 import { env } from "@config/env.js";
 
+console.log("Runtime DATABASE_URL:", env.database.url);
+
 const adapter = new PrismaPg({
   connectionString: env.database.url,
 });

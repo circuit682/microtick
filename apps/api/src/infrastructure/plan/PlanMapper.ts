@@ -1,10 +1,10 @@
 import type { Plan as PrismaPlan } from "@generated/prisma/client.js";
 
-import { Plan, Money } from "@domain";
+import { Money, Plan } from "@domain";
 
 export class PlanMapper {
   static toDomain(plan: PrismaPlan): Plan {
-    return new Plan({
+    return Plan.reconstitute({
       id: plan.id,
       name: plan.name,
       price: Money.fromMinorUnits(

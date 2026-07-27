@@ -9,7 +9,7 @@ export class IntaSendCheckoutPayload {
     config: IntaSendGatewayConfig,
   ): IntaSendCheckoutRequest {
     return {
-      amount: request.amount.amount / 100,
+      amount: request.amount.minorUnits / 100,
       currency: "KES",
       phone_number: this.normalizePhoneNumber(
         request.phoneNumber,

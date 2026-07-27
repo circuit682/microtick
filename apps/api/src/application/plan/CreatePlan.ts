@@ -1,27 +1,27 @@
 import { Money, Plan } from "@domain";
 
+import type { IdentifierGenerator } from "@shared/identity/IdentifierGenerator.js";
+
 import type { PlanRepository } from "./PlanRepository.js";
 
 export interface CreatePlanCommand {
-  id: string;
   name: string;
   price: number;
   duration: number;
-  active: boolean;
 }
 
 export class CreatePlan {
   constructor(
+    private readonly identifierGenerator: IdentifierGenerator,
     private readonly planRepository: PlanRepository,
   ) {}
 
   async execute(command: CreatePlanCommand): Promise<Plan> {
-    const plan = new Plan({
-      id: command.id,
+    const plan = Plan.create({
+      id: this.identifierGenerator.generate(),
       name: command.name,
-      price: Money.fromKES(command.price),
+      price: Money.fromMinorUnits(command.price),
       duration: command.duration,
-      active: command.active,
     });
 
     await this.planRepository.save(plan);

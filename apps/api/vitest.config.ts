@@ -13,6 +13,7 @@ export default defineConfig({
       "@http": resolve(root, "src/http"),
       "@infrastructure": resolve(root, "src/infrastructure"),
       "@shared": resolve(root, "src/shared"),
+      "@generated": resolve(root, "src/generated"),
     },
   },
 
@@ -20,5 +21,7 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["tests/**/*.test.ts"],
+
+    setupFiles: ["tests/setup.ts"],
   },
 });
