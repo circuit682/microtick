@@ -6,14 +6,17 @@ import { PurchasePlan } from "@application/plan/PurchasePlan.js";
 
 import { createIntaSendGateway } from "./infrastructure/intaSend.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
-import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
+// import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
+
+import { PrismaPaymentIntentRepository } from "@infrastructure/payment/PrismaPaymentIntentRepository.js";
 import { PrismaPlanRepository } from "@infrastructure/plan/PrismaPlanRepository.js";
 
 import { IntaSendWebhookController } from "@http/payment/controller/IntaSendWebhookController.js";
 import { PurchasePaymentController } from "@http/payment/controller/PurchasePaymentController.js";
 
 export function createIntaSendWebhookController(): IntaSendWebhookController {
-  const paymentIntentRepository = new MemoryPaymentIntentRepository();
+  // const paymentIntentRepository = new MemoryPaymentIntentRepository();
+  const paymentIntentRepository = new PrismaPaymentIntentRepository();
 
   const confirmPayment = new ConfirmPayment(paymentIntentRepository);
 
