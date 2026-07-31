@@ -5,9 +5,14 @@ import { Money, PaymentIntent } from "@domain";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 
 describe("ConfirmPayment", () => {
+  const fulfilPurchase = {
+    execute: async () => {},
+  };
+
   function createPendingPayment(): PaymentIntent {
     const payment = PaymentIntent.create({
       id: "payment-intent-1",
+      planId: "plan-1",
       amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
       reference: "payment-ref-123",
@@ -24,7 +29,7 @@ describe("ConfirmPayment", () => {
 
     await repository.save(payment);
 
-    const confirmPayment = new ConfirmPayment(repository);
+    const confirmPayment = new ConfirmPayment(repository, fulfilPurchase);
 
     await confirmPayment.execute("payment-ref-123");
 
@@ -36,7 +41,7 @@ describe("ConfirmPayment", () => {
   it("should throw when the payment cannot be found", async () => {
     const repository = new MemoryPaymentIntentRepository();
 
-    const confirmPayment = new ConfirmPayment(repository);
+    const confirmPayment = new ConfirmPayment(repository, fulfilPurchase);
 
     await expect(confirmPayment.execute("unknown-reference")).rejects.toThrow();
   });
@@ -46,6 +51,7 @@ describe("ConfirmPayment", () => {
 
     const payment = PaymentIntent.create({
       id: "payment-intent-1",
+      planId: "plan-1",
       amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
       reference: "payment-ref-123",
@@ -53,7 +59,7 @@ describe("ConfirmPayment", () => {
 
     await repository.save(payment);
 
-    const confirmPayment = new ConfirmPayment(repository);
+    const confirmPayment = new ConfirmPayment(repository, fulfilPurchase);
 
     await expect(confirmPayment.execute("payment-ref-123")).rejects.toThrow();
   });

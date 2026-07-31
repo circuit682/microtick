@@ -7,9 +7,14 @@ import { Money, PaymentIntent } from "@domain";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 
 describe("ReceivePaymentConfirmation", () => {
+  const fulfilPurchase = {
+    execute: async () => {},
+  };
+
   function createPendingPayment(): PaymentIntent {
     const payment = PaymentIntent.create({
       id: "payment-intent-1",
+      planId: "plan-1",
       amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
       reference: "payment-ref-123",
@@ -27,7 +32,7 @@ describe("ReceivePaymentConfirmation", () => {
 
     await repository.save(payment);
 
-    const confirmPayment = new ConfirmPayment(repository);
+    const confirmPayment = new ConfirmPayment(repository, fulfilPurchase);
 
     const receivePaymentConfirmation = new ReceivePaymentConfirmation(
       confirmPayment,
@@ -48,7 +53,7 @@ describe("ReceivePaymentConfirmation", () => {
     // Given
     const repository = new MemoryPaymentIntentRepository();
 
-    const confirmPayment = new ConfirmPayment(repository);
+    const confirmPayment = new ConfirmPayment(repository, fulfilPurchase);
 
     const receivePaymentConfirmation = new ReceivePaymentConfirmation(
       confirmPayment,

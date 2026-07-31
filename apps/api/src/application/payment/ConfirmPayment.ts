@@ -1,10 +1,12 @@
 import { ErrorCode, ValidationError } from "@shared";
 
 import type { PaymentIntentRepository } from "./PaymentIntentRepository.js";
+import { FulfilPurchase } from "../purchase/FulfilPurchase.js";
 
 export class ConfirmPayment {
   constructor(
     private readonly paymentIntentRepository: PaymentIntentRepository,
+    private readonly fulfilPurchase: FulfilPurchase,
   ) {}
 
   async execute(reference: string): Promise<void> {
@@ -24,5 +26,12 @@ export class ConfirmPayment {
     paymentIntent.confirm();
 
     await this.paymentIntentRepository.save(paymentIntent);
+
+    await this.fulfilPurchase.execute({
+      paymentId: paymentIntent.id,
+      customerId: paymentIntent.phoneNumber,
+      planId: paymentIntent.planId,
+      purchasedAt: new Date(),
+    });
   }
 }
