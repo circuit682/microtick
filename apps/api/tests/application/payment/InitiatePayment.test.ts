@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { InitiatePayment } from "@application/payment/InitiatePayment.js";
 import type { PaymentGateway } from "@application/payment/PaymentGateway.js";
-import { Money } from "@domain";
-import { PaymentIntent } from "@domain";
+
+import { Money, PaymentIntent } from "@domain";
+
+import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 
 describe("InitiatePayment", () => {
   it("should initiate a payment using the configured payment gateway", async () => {
@@ -13,13 +15,20 @@ describe("InitiatePayment", () => {
       }),
     };
 
-    const paymentIntent = new PaymentIntent({
+    const paymentIntentRepository = new MemoryPaymentIntentRepository();
+
+    const paymentIntent = PaymentIntent.create({
+      id: "payment-intent-1",
+      planId: "plan-123",
       amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",
-      reference: "plan-123",
+      reference: "payment-ref-123",
     });
 
-    const initiatePayment = new InitiatePayment(gateway);
+    const initiatePayment = new InitiatePayment(
+      gateway,
+      paymentIntentRepository,
+    );
 
     const response = await initiatePayment.execute(paymentIntent);
 
@@ -32,5 +41,12 @@ describe("InitiatePayment", () => {
       phoneNumber: paymentIntent.phoneNumber,
       reference: paymentIntent.reference,
     });
+
+    const stored = await paymentIntentRepository.findByReference(
+      paymentIntent.reference,
+    );
+
+    expect(stored).not.toBeNull();
+    expect(stored?.id).toBe(paymentIntent.id);
   });
 });

@@ -5,17 +5,21 @@ import { createServer } from "../../../src/server.js";
 import { CreatePlan } from "@application/plan/CreatePlan.js";
 
 import { PlanType } from "@domain";
+
 import { prisma } from "@infrastructure/database/prisma.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 import { PrismaPlanRepository } from "@infrastructure/plan/PrismaPlanRepository.js";
 
 describe("POST /payments/purchase", () => {
   beforeEach(async () => {
+    await prisma.paymentIntent.deleteMany();
     await prisma.plan.deleteMany();
   });
 
   afterEach(async () => {
     vi.restoreAllMocks();
+
+    await prisma.paymentIntent.deleteMany();
     await prisma.plan.deleteMany();
   });
 
@@ -29,12 +33,10 @@ describe("POST /payments/purchase", () => {
     }) as typeof fetch;
 
     const repository = new PrismaPlanRepository();
+
     const identifierGenerator = new UlidIdentifierGenerator();
 
-    const createPlan = new CreatePlan(
-      identifierGenerator,
-      repository,
-    );
+    const createPlan = new CreatePlan(identifierGenerator, repository);
 
     const createdPlan = await createPlan.execute({
       name: "Quiky",
@@ -58,8 +60,7 @@ describe("POST /payments/purchase", () => {
 
     expect(response.json()).toEqual({
       providerRequestId: "checkout-123",
-      checkoutUrl:
-        "https://sandbox.intasend.com/checkout/checkout-123",
+      checkoutUrl: "https://sandbox.intasend.com/checkout/checkout-123",
     });
 
     await server.close();

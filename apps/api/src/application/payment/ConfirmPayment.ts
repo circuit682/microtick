@@ -2,6 +2,7 @@ import { ErrorCode, ValidationError } from "@shared";
 
 import type { PaymentIntentRepository } from "./PaymentIntentRepository.js";
 import { FulfilPurchase } from "../purchase/FulfilPurchase.js";
+import { PaymentStatus } from "@domain";
 
 export class ConfirmPayment {
   constructor(
@@ -21,6 +22,10 @@ export class ConfirmPayment {
           reference,
         },
       );
+    }
+
+    if (paymentIntent.status === PaymentStatus.COMPLETED) {
+      return;
     }
 
     paymentIntent.confirm();
