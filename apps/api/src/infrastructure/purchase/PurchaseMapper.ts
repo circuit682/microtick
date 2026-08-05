@@ -6,6 +6,7 @@ export class PurchaseMapper {
   static toDomain(purchase: PrismaPurchase): Purchase {
     return Purchase.reconstitute({
       id: purchase.id,
+      paymentIntentId: purchase.paymentIntentId,
       customerId: purchase.customerId,
       planId: purchase.planId,
       planName: purchase.planName,
@@ -18,6 +19,7 @@ export class PurchaseMapper {
 
   static toPersistence(purchase: Purchase): {
     id: string;
+    paymentIntentId: string;
     customerId: string;
     planId: string;
     planName: string;
@@ -28,6 +30,7 @@ export class PurchaseMapper {
   } {
     return {
       id: purchase.id,
+      paymentIntentId: purchase.paymentIntentId,
       customerId: purchase.customerId,
       planId: purchase.planId,
       planName: purchase.planName,

@@ -44,4 +44,19 @@ export class PrismaPurchaseRepository implements PurchaseRepository {
 
     return purchases.map(PurchaseMapper.toDomain);
   }
+  async findByPaymentIntentId(
+    paymentIntentId: string,
+  ): Promise<Purchase | null> {
+    const purchase = await prisma.purchase.findUnique({
+      where: {
+        paymentIntentId,
+      },
+    });
+
+    if (!purchase) {
+      return null;
+    }
+
+    return PurchaseMapper.toDomain(purchase);
+  }
 }

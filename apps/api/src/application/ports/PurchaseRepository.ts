@@ -14,6 +14,9 @@ export interface PurchaseRepository {
    */
   findById(id: string): Promise<Purchase | null>;
 
+  // find by payment intent id
+  findByPaymentIntentId(paymentIntentId: string): Promise<Purchase | null>;
+
   /**
    * Returns all purchases belonging to a customer.
    */

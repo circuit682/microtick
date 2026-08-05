@@ -11,6 +11,7 @@ describe("Purchase", () => {
     const purchasedAt = new Date("2026-01-01T10:00:00Z");
 
     const purchase = Purchase.create({
+      paymentIntentId: "payment-intent-1",
       id: "purchase-001",
       customerId: "customer-001",
       planId: "quiky",
@@ -35,6 +36,7 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
+          paymentIntentId: "payment-intent-1",
           id: "purchase-001",
           customerId: "",
           planId: "quiky",
@@ -52,6 +54,7 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
+          paymentIntentId: "payment-intent-1",
           id: "purchase-001",
           customerId: "customer-001",
           planId: "",
@@ -69,6 +72,7 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
+          paymentIntentId: "payment-intent-1",
           id: "purchase-001",
           customerId: "customer-001",
           planId: "quiky",
@@ -86,6 +90,7 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
+          paymentIntentId: "payment-intent-1",
           id: "purchase-001",
           customerId: "customer-001",
           planId: "quiky",
@@ -103,6 +108,7 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
+          paymentIntentId: "payment-intent-1",
           id: "purchase-001",
           customerId: "customer-001",
           planId: "quiky",
@@ -115,11 +121,12 @@ describe("Purchase", () => {
       ErrorCode.PURCHASE_INVALID_ALLOWANCE,
     );
   });
-  
+
   it("reconstitutes an existing purchase", () => {
     const purchasedAt = new Date("2026-01-01T10:00:00Z");
 
     const purchase = Purchase.reconstitute({
+      paymentIntentId: "payment-intent-1",
       id: "purchase-001",
       customerId: "customer-001",
       planId: "daily",
@@ -137,6 +144,7 @@ describe("Purchase", () => {
 
   it("captures the purchased plan as an immutable snapshot", () => {
     const purchase = Purchase.create({
+      paymentIntentId: "payment-intent-1",
       id: "purchase-001",
       customerId: "customer-001",
       planId: "quiky",

@@ -49,19 +49,22 @@ model PaymentIntent {
 }
 
 model Purchase {
-  id                String    @id
-  customerId        String
+  id               String    @id
 
-  planId            String
-  plan              Plan      @relation(fields: [planId], references: [id])
+  paymentIntentId  String    @unique
 
-  planName          String
-  planPriceMinor    Int
-  planType          PlanType
-  allowanceMinutes  Int
+  customerId       String
 
-  purchasedAt       DateTime
+  planId           String
+  plan             Plan      @relation(fields: [planId], references: [id])
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  planName         String
+  planPriceMinor   Int
+  planType         PlanType
+  allowanceMinutes Int
+
+  purchasedAt      DateTime
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
