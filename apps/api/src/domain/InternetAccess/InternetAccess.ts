@@ -1,16 +1,15 @@
 import { ValidationError, ErrorCode } from "@shared";
 
 export interface InternetAccessProps {
+  id: string;
+  purchaseId: string;
   customerId: string;
-  planId: string;
   grantedAt: Date;
   expiresAt: Date;
 }
 
 export class InternetAccess {
-  private constructor(
-    private readonly props: InternetAccessProps,
-  ) {}
+  private constructor(private readonly props: InternetAccessProps) {}
 
   static create(props: InternetAccessProps): InternetAccess {
     if (props.expiresAt <= props.grantedAt) {
@@ -23,12 +22,16 @@ export class InternetAccess {
     return new InternetAccess(props);
   }
 
-  get customerId(): string {
-    return this.props.customerId;
+  get id(): string {
+    return this.props.id;
   }
 
-  get planId(): string {
-    return this.props.planId;
+  get purchaseId(): string {
+    return this.props.purchaseId;
+  }
+
+  get customerId(): string {
+    return this.props.customerId;
   }
 
   get grantedAt(): Date {

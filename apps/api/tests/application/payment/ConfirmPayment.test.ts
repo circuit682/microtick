@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import { ConfirmPayment } from "@application/payment/ConfirmPayment.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
 import { Money, PaymentIntent, PaymentStatus, Plan, PlanType } from "@domain";
 
+import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
@@ -17,20 +19,30 @@ describe("ConfirmPayment", () => {
 
     const planRepository = new MemoryPlanRepository();
 
-    await planRepository.save(
-      Plan.create({
-        id: "plan-1",
-        name: "Quiky",
-        price: Money.fromMinorUnits(500),
-        type: PlanType.USAGE,
-        allowanceMinutes: 30,
-      }),
+    const identifierGenerator = new UlidIdentifierGenerator();
+
+    const internetAccessRepository = new MemoryInternetAccessRepository();
+
+    const grantInternetAccess = new GrantInternetAccess(
+      internetAccessRepository,
+      identifierGenerator,
     );
+
+    const plan = Plan.create({
+      id: "plan-1",
+      name: "Quiky",
+      price: Money.fromMinorUnits(500),
+      type: PlanType.USAGE,
+      allowanceMinutes: 30,
+    });
+
+    await planRepository.save(plan);
 
     return new FulfilPurchase(
       purchaseRepository,
       planRepository,
-      new UlidIdentifierGenerator(),
+      identifierGenerator,
+      grantInternetAccess,
     );
   }
 

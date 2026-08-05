@@ -1,13 +1,29 @@
+import type { IdentifierGenerator } from "@shared";
+
 import { InternetAccess, Plan, PlanType } from "@domain";
 
+import type { InternetAccessRepository } from "@application/ports/InternetAccessRepository.js";
+
 export interface GrantInternetAccessCommand {
+  purchaseId: string;
   customerId: string;
   plan: Plan;
   grantedAt: Date;
 }
 
 export class GrantInternetAccess {
-  execute(command: GrantInternetAccessCommand): InternetAccess {
+  constructor(
+    private readonly repository: InternetAccessRepository,
+    private readonly identifierGenerator: IdentifierGenerator,
+  ) {}
+
+  async execute(command: GrantInternetAccessCommand): Promise<InternetAccess> {
+    const existing = await this.repository.findByPurchaseId(command.purchaseId);
+
+    if (existing !== null) {
+      return existing;
+    }
+
     const expiresAt = new Date(command.grantedAt);
 
     switch (command.plan.type) {
@@ -19,20 +35,22 @@ export class GrantInternetAccess {
 
       case PlanType.USAGE:
         // Temporary implementation.
-        // Usage-based plans will eventually consume allowance
-        // while the customer is connected rather than by
-        // elapsed wall-clock time.
         expiresAt.setMinutes(
           expiresAt.getMinutes() + command.plan.allowanceMinutes,
         );
         break;
     }
 
-    return InternetAccess.create({
+    const access = InternetAccess.create({
+      id: this.identifierGenerator.generate(),
+      purchaseId: command.purchaseId,
       customerId: command.customerId,
-      planId: command.plan.id,
       grantedAt: command.grantedAt,
       expiresAt,
     });
+
+    await this.repository.save(access);
+
+    return access;
   }
 }

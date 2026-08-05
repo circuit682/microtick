@@ -12,6 +12,8 @@ import { PrismaPlanRepository } from "@infrastructure/plan/PrismaPlanRepository.
 
 describe("POST /payments/purchase", () => {
   beforeEach(async () => {
+    await prisma.internetAccess.deleteMany();
+    await prisma.purchase.deleteMany();
     await prisma.paymentIntent.deleteMany();
     await prisma.plan.deleteMany();
   });
@@ -19,6 +21,8 @@ describe("POST /payments/purchase", () => {
   afterEach(async () => {
     vi.restoreAllMocks();
 
+    await prisma.internetAccess.deleteMany();
+    await prisma.purchase.deleteMany();
     await prisma.paymentIntent.deleteMany();
     await prisma.plan.deleteMany();
   });

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
 import { Money, Plan, PlanType, Purchase } from "@domain";
 
+import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
@@ -20,6 +22,26 @@ describe("FulfilPurchase", () => {
     });
   }
 
+  function createFulfilPurchase(
+    purchaseRepository: InMemoryPurchaseRepository,
+    planRepository: MemoryPlanRepository,
+    identifierGenerator: UlidIdentifierGenerator,
+  ): FulfilPurchase {
+    const internetAccessRepository = new MemoryInternetAccessRepository();
+
+    const grantInternetAccess = new GrantInternetAccess(
+      internetAccessRepository,
+      identifierGenerator,
+    );
+
+    return new FulfilPurchase(
+      purchaseRepository,
+      planRepository,
+      identifierGenerator,
+      grantInternetAccess,
+    );
+  }
+
   it("creates a purchase from a valid payment", async () => {
     const purchaseRepository = new InMemoryPurchaseRepository();
 
@@ -31,7 +53,7 @@ describe("FulfilPurchase", () => {
 
     await planRepository.save(plan);
 
-    const fulfilPurchase = new FulfilPurchase(
+    const fulfilPurchase = createFulfilPurchase(
       purchaseRepository,
       planRepository,
       identifierGenerator,
@@ -70,7 +92,7 @@ describe("FulfilPurchase", () => {
 
     await planRepository.save(plan);
 
-    const fulfilPurchase = new FulfilPurchase(
+    const fulfilPurchase = createFulfilPurchase(
       purchaseRepository,
       planRepository,
       identifierGenerator,
@@ -105,7 +127,7 @@ describe("FulfilPurchase", () => {
 
     await planRepository.save(plan);
 
-    const fulfilPurchase = new FulfilPurchase(
+    const fulfilPurchase = createFulfilPurchase(
       purchaseRepository,
       planRepository,
       identifierGenerator,
@@ -140,7 +162,7 @@ describe("FulfilPurchase", () => {
 
     const identifierGenerator = new UlidIdentifierGenerator();
 
-    const fulfilPurchase = new FulfilPurchase(
+    const fulfilPurchase = createFulfilPurchase(
       purchaseRepository,
       planRepository,
       identifierGenerator,
@@ -181,7 +203,7 @@ describe("FulfilPurchase", () => {
 
     await purchaseRepository.save(existingPurchase);
 
-    const fulfilPurchase = new FulfilPurchase(
+    const fulfilPurchase = createFulfilPurchase(
       purchaseRepository,
       planRepository,
       identifierGenerator,

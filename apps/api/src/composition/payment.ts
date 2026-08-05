@@ -1,3 +1,4 @@
+import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import { ConfirmPayment } from "@application/payment/ConfirmPayment.js";
 import { InitiatePayment } from "@application/payment/InitiatePayment.js";
 import { ReceivePaymentConfirmation } from "@application/payment/ReceivePaymentConfirmation.js";
@@ -9,6 +10,7 @@ import { createIntaSendGateway } from "./infrastructure/intaSend.js";
 
 import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 
+import { PrismaInternetAccessRepository } from "@infrastructure/access/PrismaInternetAccessRepository.js";
 import { PrismaPaymentIntentRepository } from "@infrastructure/payment/PrismaPaymentIntentRepository.js";
 import { PrismaPlanRepository } from "@infrastructure/plan/PrismaPlanRepository.js";
 import { PrismaPurchaseRepository } from "@infrastructure/purchase/PrismaPurchaseRepository.js";
@@ -23,12 +25,20 @@ export function createIntaSendWebhookController(): IntaSendWebhookController {
 
   const purchaseRepository = new PrismaPurchaseRepository();
 
+  const internetAccessRepository = new PrismaInternetAccessRepository();
+
   const identifierGenerator = new UlidIdentifierGenerator();
+
+  const grantInternetAccess = new GrantInternetAccess(
+    internetAccessRepository,
+    identifierGenerator,
+  );
 
   const fulfilPurchase = new FulfilPurchase(
     purchaseRepository,
     planRepository,
     identifierGenerator,
+    grantInternetAccess,
   );
 
   const confirmPayment = new ConfirmPayment(

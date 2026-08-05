@@ -67,4 +67,21 @@ model Purchase {
 
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+
+  internetAccess   InternetAccess?
+}
+
+model InternetAccess {
+  id          String    @id
+
+  purchaseId  String    @unique
+  purchase    Purchase  @relation(fields: [purchaseId], references: [id])
+
+  customerId  String
+
+  grantedAt   DateTime
+  expiresAt   DateTime
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

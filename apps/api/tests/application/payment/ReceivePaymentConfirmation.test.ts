@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import { ConfirmPayment } from "@application/payment/ConfirmPayment.js";
 import { ReceivePaymentConfirmation } from "@application/payment/ReceivePaymentConfirmation.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
 import { Money, PaymentIntent, PaymentStatus, Plan, PlanType } from "@domain";
 
+import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
@@ -18,20 +20,30 @@ describe("ReceivePaymentConfirmation", () => {
 
     const planRepository = new MemoryPlanRepository();
 
-    await planRepository.save(
-      Plan.create({
-        id: "plan-1",
-        name: "Quiky",
-        price: Money.fromMinorUnits(500),
-        type: PlanType.USAGE,
-        allowanceMinutes: 30,
-      }),
+    const identifierGenerator = new UlidIdentifierGenerator();
+
+    const internetAccessRepository = new MemoryInternetAccessRepository();
+
+    const grantInternetAccess = new GrantInternetAccess(
+      internetAccessRepository,
+      identifierGenerator,
     );
+
+    const plan = Plan.create({
+      id: "plan-1",
+      name: "Quiky",
+      price: Money.fromMinorUnits(500),
+      type: PlanType.USAGE,
+      allowanceMinutes: 30,
+    });
+
+    await planRepository.save(plan);
 
     return new FulfilPurchase(
       purchaseRepository,
       planRepository,
-      new UlidIdentifierGenerator(),
+      identifierGenerator,
+      grantInternetAccess,
     );
   }
 
@@ -102,15 +114,8 @@ describe("ReceivePaymentConfirmation", () => {
     // Given
     const repository = new MemoryPaymentIntentRepository();
 
-    const payment = PaymentIntent.create({
-      id: "payment-intent-1",
-      planId: "plan-1",
-      amount: Money.fromMinorUnits(500),
-      phoneNumber: "0712345678",
-      reference: "payment-ref-123",
-    });
+    const payment = createPendingPayment();
 
-    payment.markPending();
     payment.confirm();
 
     await repository.save(payment);

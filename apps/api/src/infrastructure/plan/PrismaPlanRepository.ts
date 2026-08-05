@@ -1,5 +1,8 @@
 import { PlanRepository } from "@application/plan/PlanRepository.js";
 import { Plan } from "@domain";
+import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
+
+import { PrismaInternetAccessRepository } from "@infrastructure/access/PrismaInternetAccessRepository.js";
 
 import { prisma } from "@infrastructure/database/prisma.js";
 
