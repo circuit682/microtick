@@ -13,35 +13,34 @@ export interface FulfilPurchaseCommand {
 }
 
 export interface FulfilPurchaseUseCase {
-  execute(
-    command: FulfilPurchaseCommand,
-  ): Promise<void>;
+  execute(command: FulfilPurchaseCommand): Promise<void>;
 }
 
-export class FulfilPurchase
-  implements FulfilPurchaseUseCase
-{
+export class FulfilPurchase implements FulfilPurchaseUseCase {
   constructor(
     private readonly purchaseRepository: PurchaseRepository,
     private readonly planRepository: PlanRepository,
     private readonly identifierGenerator: IdentifierGenerator,
   ) {}
 
-  async execute(
-    command: FulfilPurchaseCommand,
-  ): Promise<void> {
-    const plan = await this.planRepository.findById(
-      command.planId,
+  async execute(command: FulfilPurchaseCommand): Promise<void> {
+    const existing = await this.purchaseRepository.findByPaymentIntentId(
+      command.paymentId,
     );
 
+    if (existing !== null) {
+      return;
+    }
+
+    const plan = await this.planRepository.findById(command.planId);
+
     if (plan === null) {
-      throw new Error(
-        `Plan '${command.planId}' was not found.`,
-      );
+      throw new Error(`Plan '${command.planId}' was not found.`);
     }
 
     const purchase = Purchase.create({
       id: this.identifierGenerator.generate(),
+      paymentIntentId: command.paymentId,
       customerId: command.customerId,
       planId: plan.id,
       planName: plan.name,
