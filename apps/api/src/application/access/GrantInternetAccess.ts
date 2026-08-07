@@ -1,6 +1,6 @@
 import type { IdentifierGenerator } from "@shared";
 
-import { InternetAccess, Plan, PlanType } from "@domain";
+import { AccessMethod, InternetAccess, Plan } from "@domain";
 
 import type { InternetAccessRepository } from "@application/ports/InternetAccessRepository.js";
 
@@ -26,20 +26,30 @@ export class GrantInternetAccess {
 
     const expiresAt = new Date(command.grantedAt);
 
-    switch (command.plan.type) {
-      case PlanType.TIME:
+    switch (command.plan.accessMethod) {
+      case AccessMethod.WALL_CLOCK:
         expiresAt.setMinutes(
-          expiresAt.getMinutes() + command.plan.allowanceMinutes,
+          expiresAt.getMinutes() + command.plan.validity.toMinutes(),
         );
         break;
 
-      case PlanType.USAGE:
+      case AccessMethod.SESSION:
+        //
         // Temporary implementation.
+        //
+        // Session-based plans will eventually expire
+        // according to accumulated online usage rather
+        // than wall-clock time.
+        //
         expiresAt.setMinutes(
-          expiresAt.getMinutes() + command.plan.allowanceMinutes,
+          expiresAt.getMinutes() + command.plan.validity.toMinutes(),
         );
         break;
     }
+
+    console.log("Validity (minutes):", command.plan.validity.toMinutes());
+    console.log("Granted:", command.grantedAt);
+    console.log("Expires:", expiresAt);
 
     const access = InternetAccess.create({
       id: this.identifierGenerator.generate(),

@@ -5,7 +5,17 @@ import { ConfirmPayment } from "@application/payment/ConfirmPayment.js";
 import { ReceivePaymentConfirmation } from "@application/payment/ReceivePaymentConfirmation.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
-import { Money, PaymentIntent, PaymentStatus, Plan, PlanType } from "@domain";
+import {
+  AccessMethod,
+  Money,
+  PaymentIntent,
+  PaymentStatus,
+  Plan,
+  PlanType,
+  ServiceLevel,
+  Validity,
+  ValidityUnit,
+} from "@domain";
 
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
@@ -33,6 +43,19 @@ describe("ReceivePaymentConfirmation", () => {
       id: "plan-1",
       name: "Quiky",
       price: Money.fromMinorUnits(500),
+
+      validity: Validity.create({
+        amount: 30,
+        unit: ValidityUnit.MINUTES,
+      }),
+
+      serviceLevel: ServiceLevel.create({
+        name: "Residential",
+      }),
+
+      accessMethod: AccessMethod.SESSION,
+
+      // Temporary compatibility.
       type: PlanType.USAGE,
       allowanceMinutes: 30,
     });

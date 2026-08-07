@@ -1,28 +1,68 @@
 import { describe, expect, it } from "vitest";
 
-import { Money, Plan, PlanType } from "@domain";
+import {
+  AccessMethod,
+  Money,
+  Plan,
+  PlanType,
+  ServiceLevel,
+  Validity,
+  ValidityUnit,
+} from "@domain";
+
 import { ValidationError } from "@shared";
 
 describe("Plan", () => {
+  function sessionValidity(): Validity {
+    return Validity.create({
+      amount: 30,
+      unit: ValidityUnit.MINUTES,
+    });
+  }
+
+  function wallClockValidity(): Validity {
+    return Validity.create({
+      amount: 24,
+      unit: ValidityUnit.HOURS,
+    });
+  }
+
+  function residentialService(): ServiceLevel {
+    return ServiceLevel.create({
+      name: "Residential",
+    });
+  }
+
   describe("Creation", () => {
     it("creates a valid usage plan", () => {
-      // Given
       const plan = Plan.create({
         id: "quiky-30",
         name: "Quiky",
         price: Money.fromMinorUnits(500),
+
+        validity: sessionValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.SESSION,
+
+        // Temporary compatibility.
         type: PlanType.USAGE,
         allowanceMinutes: 30,
       });
 
-      // Then
       expect(plan.id).toBe("quiky-30");
       expect(plan.name).toBe("Quiky");
-      expect(plan.price).toEqual(
-        Money.fromMinorUnits(500),
-      );
+      expect(plan.price).toEqual(Money.fromMinorUnits(500));
+
+      expect(plan.validity).toEqual(sessionValidity());
+
+      expect(plan.serviceLevel).toEqual(residentialService());
+
+      expect(plan.accessMethod).toBe(AccessMethod.SESSION);
+
       expect(plan.type).toBe(PlanType.USAGE);
+
       expect(plan.allowanceMinutes).toBe(30);
+
       expect(plan.active).toBe(true);
     });
 
@@ -31,11 +71,22 @@ describe("Plan", () => {
         id: "daily",
         name: "Daily",
         price: Money.fromMinorUnits(5000),
+
+        validity: wallClockValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.WALL_CLOCK,
+
+        // Temporary compatibility.
         type: PlanType.TIME,
         allowanceMinutes: 1440,
       });
 
+      expect(plan.validity).toEqual(wallClockValidity());
+
+      expect(plan.accessMethod).toBe(AccessMethod.WALL_CLOCK);
+
       expect(plan.type).toBe(PlanType.TIME);
+
       expect(plan.allowanceMinutes).toBe(1440);
     });
 
@@ -45,6 +96,11 @@ describe("Plan", () => {
           id: "starter-30",
           name: "Starter",
           price: Money.fromMinorUnits(0),
+
+          validity: sessionValidity(),
+          serviceLevel: residentialService(),
+          accessMethod: AccessMethod.SESSION,
+
           type: PlanType.USAGE,
           allowanceMinutes: 30,
         });
@@ -57,6 +113,11 @@ describe("Plan", () => {
           id: "starter-30",
           name: "",
           price: Money.fromMinorUnits(500),
+
+          validity: sessionValidity(),
+          serviceLevel: residentialService(),
+          accessMethod: AccessMethod.SESSION,
+
           type: PlanType.USAGE,
           allowanceMinutes: 30,
         });
@@ -69,6 +130,11 @@ describe("Plan", () => {
           id: "starter-30",
           name: "     ",
           price: Money.fromMinorUnits(500),
+
+          validity: sessionValidity(),
+          serviceLevel: residentialService(),
+          accessMethod: AccessMethod.SESSION,
+
           type: PlanType.USAGE,
           allowanceMinutes: 30,
         });
@@ -81,6 +147,11 @@ describe("Plan", () => {
           id: "starter-30",
           name: "Starter",
           price: Money.fromMinorUnits(500),
+
+          validity: sessionValidity(),
+          serviceLevel: residentialService(),
+          accessMethod: AccessMethod.SESSION,
+
           type: PlanType.USAGE,
           allowanceMinutes: 0,
         });
@@ -94,13 +165,21 @@ describe("Plan", () => {
         id: "quiky-30",
         name: "Quiky",
         price: Money.fromMinorUnits(500),
+
+        validity: sessionValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.SESSION,
+
         type: PlanType.USAGE,
         allowanceMinutes: 30,
         active: true,
       });
 
       expect(plan.active).toBe(true);
-      expect(plan.type).toBe(PlanType.USAGE);
+
+      expect(plan.validity).toEqual(sessionValidity());
+
+      expect(plan.accessMethod).toBe(AccessMethod.SESSION);
     });
 
     it("reconstitutes an existing inactive plan", () => {
@@ -108,13 +187,21 @@ describe("Plan", () => {
         id: "daily",
         name: "Daily",
         price: Money.fromMinorUnits(5000),
+
+        validity: wallClockValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.WALL_CLOCK,
+
         type: PlanType.TIME,
         allowanceMinutes: 1440,
         active: false,
       });
 
       expect(plan.active).toBe(false);
-      expect(plan.type).toBe(PlanType.TIME);
+
+      expect(plan.validity).toEqual(wallClockValidity());
+
+      expect(plan.accessMethod).toBe(AccessMethod.WALL_CLOCK);
     });
   });
 
@@ -124,6 +211,11 @@ describe("Plan", () => {
         id: "quiky-30",
         name: "Quiky",
         price: Money.fromMinorUnits(500),
+
+        validity: sessionValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.SESSION,
+
         type: PlanType.USAGE,
         allowanceMinutes: 30,
       });
@@ -131,7 +223,9 @@ describe("Plan", () => {
       const inactivePlan = plan.deactivate();
 
       expect(inactivePlan.active).toBe(false);
+
       expect(plan.active).toBe(true);
+
       expect(inactivePlan).not.toBe(plan);
     });
 
@@ -140,6 +234,11 @@ describe("Plan", () => {
         id: "quiky-30",
         name: "Quiky",
         price: Money.fromMinorUnits(500),
+
+        validity: sessionValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.SESSION,
+
         type: PlanType.USAGE,
         allowanceMinutes: 30,
         active: false,
@@ -148,7 +247,9 @@ describe("Plan", () => {
       const activePlan = inactivePlan.activate();
 
       expect(activePlan.active).toBe(true);
+
       expect(inactivePlan.active).toBe(false);
+
       expect(activePlan).not.toBe(inactivePlan);
     });
 
@@ -157,6 +258,11 @@ describe("Plan", () => {
         id: "quiky-30",
         name: "Quiky",
         price: Money.fromMinorUnits(500),
+
+        validity: sessionValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.SESSION,
+
         type: PlanType.USAGE,
         allowanceMinutes: 30,
       });
@@ -169,6 +275,11 @@ describe("Plan", () => {
         id: "quiky-30",
         name: "Quiky",
         price: Money.fromMinorUnits(500),
+
+        validity: sessionValidity(),
+        serviceLevel: residentialService(),
+        accessMethod: AccessMethod.SESSION,
+
         type: PlanType.USAGE,
         allowanceMinutes: 30,
         active: false,

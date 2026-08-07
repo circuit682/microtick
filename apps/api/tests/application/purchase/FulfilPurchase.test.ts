@@ -3,7 +3,16 @@ import { describe, expect, it } from "vitest";
 import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
-import { Money, Plan, PlanType, Purchase } from "@domain";
+import {
+  AccessMethod,
+  Money,
+  Plan,
+  PlanType,
+  Purchase,
+  ServiceLevel,
+  Validity,
+  ValidityUnit,
+} from "@domain";
 
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
@@ -17,6 +26,19 @@ describe("FulfilPurchase", () => {
       id: "plan-001",
       name: "Quiky",
       price: Money.fromMinorUnits(500),
+
+      validity: Validity.create({
+        amount: 30,
+        unit: ValidityUnit.MINUTES,
+      }),
+
+      serviceLevel: ServiceLevel.create({
+        name: "Residential",
+      }),
+
+      accessMethod: AccessMethod.SESSION,
+
+      // Temporary compatibility.
       type: PlanType.USAGE,
       allowanceMinutes: 30,
     });
@@ -73,11 +95,16 @@ describe("FulfilPurchase", () => {
     const purchase = purchases[0]!;
 
     expect(purchase.paymentIntentId).toBe("payment-001");
+
     expect(purchase.customerId).toBe("customer-001");
+
     expect(purchase.planId).toBe(plan.id);
     expect(purchase.planName).toBe(plan.name);
+
     expect(purchase.planPrice.equals(plan.price)).toBe(true);
+
     expect(purchase.planType).toBe(plan.type);
+
     expect(purchase.allowanceMinutes).toBe(plan.allowanceMinutes);
   });
 
@@ -149,9 +176,13 @@ describe("FulfilPurchase", () => {
     const updatedPlan = plan.deactivate();
 
     expect(purchase.planId).toBe(updatedPlan.id);
+
     expect(purchase.planName).toBe(updatedPlan.name);
+
     expect(purchase.planPrice.equals(updatedPlan.price)).toBe(true);
+
     expect(purchase.planType).toBe(updatedPlan.type);
+
     expect(purchase.allowanceMinutes).toBe(updatedPlan.allowanceMinutes);
   });
 

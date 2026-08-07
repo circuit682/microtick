@@ -1,6 +1,6 @@
 import { ErrorCode, ValidationError } from "@shared";
 
-import { Money } from "../money/index.js";
+import { AccessMethod, Money, ServiceLevel, Validity } from "@domain";
 
 import { PlanType } from "./PlanType.js";
 
@@ -8,6 +8,12 @@ export interface CreatePlanProps {
   id: string;
   name: string;
   price: Money;
+
+  validity: Validity;
+  serviceLevel: ServiceLevel;
+  accessMethod: AccessMethod;
+
+  // Temporary compatibility.
   type: PlanType;
   allowanceMinutes: number;
 }
@@ -16,8 +22,15 @@ export interface PlanProps {
   id: string;
   name: string;
   price: Money;
+
+  validity: Validity;
+  serviceLevel: ServiceLevel;
+  accessMethod: AccessMethod;
+
+  // Temporary compatibility.
   type: PlanType;
   allowanceMinutes: number;
+
   active: boolean;
 }
 
@@ -26,7 +39,10 @@ export class Plan {
 
   private constructor(props: PlanProps) {
     this.validateInvariants(props);
-    this.props = Object.freeze({ ...props });
+
+    this.props = Object.freeze({
+      ...props,
+    });
   }
 
   /**
@@ -44,8 +60,7 @@ export class Plan {
   /**
    * Reconstitutes an existing aggregate from persistence.
    *
-   * This should only be used by repositories and mappers when
-   * rebuilding an existing Plan from storage.
+   * Used only by repositories.
    */
   static reconstitute(props: PlanProps): Plan {
     return new Plan(props);
@@ -53,9 +68,6 @@ export class Plan {
 
   /**
    * Activates an inactive plan.
-   *
-   * Since the aggregate is immutable, a new instance is returned.
-   * If the plan is already active, the current instance is returned.
    */
   activate(): Plan {
     if (this.active) {
@@ -70,9 +82,6 @@ export class Plan {
 
   /**
    * Deactivates an active plan.
-   *
-   * Since the aggregate is immutable, a new instance is returned.
-   * If the plan is already inactive, the current instance is returned.
    */
   deactivate(): Plan {
     if (!this.active) {
@@ -86,14 +95,10 @@ export class Plan {
   }
 
   /**
-   * Ensures the aggregate always remains in a valid state.
+   * Aggregate invariants.
    */
   private validateInvariants(props: PlanProps): void {
-    if (
-      props.price.isLessThanOrEqualTo(
-        Money.fromMinorUnits(0),
-      )
-    ) {
+    if (props.price.isLessThanOrEqualTo(Money.fromMinorUnits(0))) {
       throw new ValidationError(
         ErrorCode.PLAN_INVALID_PRICE,
         "Plan price must be greater than zero.",
@@ -113,13 +118,14 @@ export class Plan {
       );
     }
 
+    // Temporary compatibility until Validity
+    // fully replaces allowanceMinutes.
     if (props.allowanceMinutes <= 0) {
       throw new ValidationError(
         ErrorCode.PLAN_INVALID_ALLOWANCE,
         "Plan allowance must be greater than zero.",
         {
-          attemptedAllowanceMinutes:
-            props.allowanceMinutes,
+          attemptedAllowanceMinutes: props.allowanceMinutes,
         },
       );
     }
@@ -137,10 +143,28 @@ export class Plan {
     return this.props.price;
   }
 
+  get validity(): Validity {
+    return this.props.validity;
+  }
+
+  get serviceLevel(): ServiceLevel {
+    return this.props.serviceLevel;
+  }
+
+  get accessMethod(): AccessMethod {
+    return this.props.accessMethod;
+  }
+
+  /**
+   * Temporary compatibility.
+   */
   get type(): PlanType {
     return this.props.type;
   }
 
+  /**
+   * Temporary compatibility.
+   */
   get allowanceMinutes(): number {
     return this.props.allowanceMinutes;
   }
