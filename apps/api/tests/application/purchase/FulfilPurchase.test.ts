@@ -103,9 +103,11 @@ describe("FulfilPurchase", () => {
 
     expect(purchase.planPrice.equals(plan.price)).toBe(true);
 
-    expect(purchase.planType).toBe(plan.type);
+    expect(purchase.validity.equals(plan.validity)).toBe(true);
 
-    expect(purchase.allowanceMinutes).toBe(plan.allowanceMinutes);
+    expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
+
+    expect(purchase.accessMethod).toBe(plan.accessMethod);
   });
 
   it("persists the purchase", async () => {
@@ -181,9 +183,11 @@ describe("FulfilPurchase", () => {
 
     expect(purchase.planPrice.equals(updatedPlan.price)).toBe(true);
 
-    expect(purchase.planType).toBe(updatedPlan.type);
+    expect(purchase.validity.equals(updatedPlan.validity)).toBe(true);
 
-    expect(purchase.allowanceMinutes).toBe(updatedPlan.allowanceMinutes);
+    expect(purchase.serviceLevel.equals(updatedPlan.serviceLevel)).toBe(true);
+
+    expect(purchase.accessMethod).toBe(updatedPlan.accessMethod);
   });
 
   it("throws when the plan does not exist", async () => {
@@ -224,11 +228,15 @@ describe("FulfilPurchase", () => {
       id: "purchase-001",
       paymentIntentId: "payment-001",
       customerId: "customer-001",
+
       planId: plan.id,
       planName: plan.name,
       planPrice: plan.price,
-      planType: plan.type,
-      allowanceMinutes: plan.allowanceMinutes,
+
+      validity: plan.validity,
+      serviceLevel: plan.serviceLevel,
+      accessMethod: plan.accessMethod,
+
       purchasedAt: new Date(),
     });
 

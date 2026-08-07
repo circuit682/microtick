@@ -1,17 +1,20 @@
 import { ErrorCode, ValidationError } from "@shared";
 
-import { Money } from "../money/index.js";
-import { PlanType } from "../plan/PlanType.js";
+import { AccessMethod, Money, ServiceLevel, Validity } from "@domain";
 
 export interface CreatePurchaseProps {
   id: string;
   paymentIntentId: string;
   customerId: string;
+
   planId: string;
   planName: string;
   planPrice: Money;
-  planType: PlanType;
-  allowanceMinutes: number;
+
+  validity: Validity;
+  serviceLevel: ServiceLevel;
+  accessMethod: AccessMethod;
+
   purchasedAt: Date;
 }
 
@@ -19,11 +22,15 @@ export interface PurchaseProps {
   id: string;
   paymentIntentId: string;
   customerId: string;
+
   planId: string;
   planName: string;
   planPrice: Money;
-  planType: PlanType;
-  allowanceMinutes: number;
+
+  validity: Validity;
+  serviceLevel: ServiceLevel;
+  accessMethod: AccessMethod;
+
   purchasedAt: Date;
 }
 
@@ -32,6 +39,7 @@ export class Purchase {
 
   private constructor(props: PurchaseProps) {
     this.validateInvariants(props);
+
     this.props = Object.freeze({
       ...props,
     });
@@ -89,13 +97,6 @@ export class Purchase {
         "Purchase price must be greater than zero.",
       );
     }
-
-    if (props.allowanceMinutes <= 0) {
-      throw new ValidationError(
-        ErrorCode.PURCHASE_INVALID_ALLOWANCE,
-        "Purchase allowance must be greater than zero.",
-      );
-    }
   }
 
   get id(): string {
@@ -122,12 +123,16 @@ export class Purchase {
     return this.props.planPrice;
   }
 
-  get planType(): PlanType {
-    return this.props.planType;
+  get validity(): Validity {
+    return this.props.validity;
   }
 
-  get allowanceMinutes(): number {
-    return this.props.allowanceMinutes;
+  get serviceLevel(): ServiceLevel {
+    return this.props.serviceLevel;
+  }
+
+  get accessMethod(): AccessMethod {
+    return this.props.accessMethod;
   }
 
   get purchasedAt(): Date {

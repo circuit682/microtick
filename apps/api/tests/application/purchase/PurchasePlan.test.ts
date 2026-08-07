@@ -47,10 +47,12 @@ describe("PurchasePlan", () => {
 
     const useCase = new PurchasePlan(repository, identifierGenerator);
 
+    const plan = createPlan();
+
     const purchase = await useCase.execute({
       paymentIntentId: "payment-intent-001",
       customerId: "customer-001",
-      plan: createPlan(),
+      plan,
     });
 
     expect(purchase.id).toBeDefined();
@@ -59,15 +61,17 @@ describe("PurchasePlan", () => {
 
     expect(purchase.customerId).toBe("customer-001");
 
-    expect(purchase.planId).toBe("plan-001");
+    expect(purchase.planId).toBe(plan.id);
 
-    expect(purchase.planName).toBe("Quiky");
+    expect(purchase.planName).toBe(plan.name);
 
-    expect(purchase.planPrice.equals(Money.fromMinorUnits(500))).toBe(true);
+    expect(purchase.planPrice.equals(plan.price)).toBe(true);
 
-    expect(purchase.planType).toBe(PlanType.USAGE);
+    expect(purchase.validity.equals(plan.validity)).toBe(true);
 
-    expect(purchase.allowanceMinutes).toBe(30);
+    expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
+
+    expect(purchase.accessMethod).toBe(plan.accessMethod);
   });
 
   it("persists the purchase", async () => {
@@ -99,20 +103,24 @@ describe("PurchasePlan", () => {
 
     const useCase = new PurchasePlan(repository, identifierGenerator);
 
+    const plan = createPlan();
+
     const purchase = await useCase.execute({
       paymentIntentId: "payment-intent-001",
       customerId: "customer-001",
-      plan: createPlan(),
+      plan,
     });
 
-    expect(purchase.planId).toBe("plan-001");
+    expect(purchase.planId).toBe(plan.id);
 
-    expect(purchase.planName).toBe("Quiky");
+    expect(purchase.planName).toBe(plan.name);
 
-    expect(purchase.planPrice.equals(Money.fromMinorUnits(500))).toBe(true);
+    expect(purchase.planPrice.equals(plan.price)).toBe(true);
 
-    expect(purchase.planType).toBe(PlanType.USAGE);
+    expect(purchase.validity.equals(plan.validity)).toBe(true);
 
-    expect(purchase.allowanceMinutes).toBe(30);
+    expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
+
+    expect(purchase.accessMethod).toBe(plan.accessMethod);
   });
 });

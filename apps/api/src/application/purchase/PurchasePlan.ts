@@ -1,7 +1,7 @@
 import { Plan, Purchase } from "@domain";
 
-import { IdentifierGenerator } from "@shared";
-import { PurchaseRepository } from "../ports/PurchaseRepository.js";
+import type { IdentifierGenerator } from "@shared";
+import type { PurchaseRepository } from "../ports/PurchaseRepository.js";
 
 export interface PurchasePlanRequest {
   paymentIntentId: string;
@@ -18,13 +18,18 @@ export class PurchasePlan {
   async execute(request: PurchasePlanRequest): Promise<Purchase> {
     const purchase = Purchase.create({
       id: this.identifierGenerator.generate(),
+
       paymentIntentId: request.paymentIntentId,
       customerId: request.customerId,
+
       planId: request.plan.id,
       planName: request.plan.name,
       planPrice: request.plan.price,
-      planType: request.plan.type,
-      allowanceMinutes: request.plan.allowanceMinutes,
+
+      validity: request.plan.validity,
+      serviceLevel: request.plan.serviceLevel,
+      accessMethod: request.plan.accessMethod,
+
       purchasedAt: new Date(),
     });
 

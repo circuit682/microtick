@@ -1,6 +1,14 @@
 import type { Purchase as PrismaPurchase } from "@generated/prisma/client.js";
 
-import { Money, Purchase, PlanType } from "@domain";
+import {
+  AccessMethod,
+  Money,
+  Purchase,
+  PlanType,
+  ServiceLevel,
+  Validity,
+  ValidityUnit,
+} from "@domain";
 
 export class PurchaseMapper {
   static toDomain(purchase: PrismaPurchase): Purchase {
@@ -8,11 +16,29 @@ export class PurchaseMapper {
       id: purchase.id,
       paymentIntentId: purchase.paymentIntentId,
       customerId: purchase.customerId,
+
       planId: purchase.planId,
       planName: purchase.planName,
       planPrice: Money.fromMinorUnits(purchase.planPriceMinor),
-      planType: purchase.planType as PlanType,
-      allowanceMinutes: purchase.allowanceMinutes,
+
+      //
+      // Temporary compatibility until the database
+      // schema is migrated.
+      //
+      validity: Validity.create({
+        amount: purchase.allowanceMinutes,
+        unit: ValidityUnit.MINUTES,
+      }),
+
+      serviceLevel: ServiceLevel.create({
+        name: "Default",
+      }),
+
+      accessMethod:
+        purchase.planType === PlanType.TIME
+          ? AccessMethod.WALL_CLOCK
+          : AccessMethod.SESSION,
+
       purchasedAt: purchase.purchasedAt,
     });
   }
@@ -32,11 +58,21 @@ export class PurchaseMapper {
       id: purchase.id,
       paymentIntentId: purchase.paymentIntentId,
       customerId: purchase.customerId,
+
       planId: purchase.planId,
       planName: purchase.planName,
       planPriceMinor: purchase.planPrice.minorUnits,
-      planType: purchase.planType,
-      allowanceMinutes: purchase.allowanceMinutes,
+
+      //
+      // Temporary compatibility.
+      //
+      planType:
+        purchase.accessMethod === AccessMethod.WALL_CLOCK
+          ? PlanType.TIME
+          : PlanType.USAGE,
+
+      allowanceMinutes: purchase.validity.toMinutes(),
+
       purchasedAt: purchase.purchasedAt,
     };
   }

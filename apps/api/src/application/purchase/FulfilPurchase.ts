@@ -44,11 +44,15 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
       id: this.identifierGenerator.generate(),
       paymentIntentId: command.paymentId,
       customerId: command.customerId,
+
       planId: plan.id,
       planName: plan.name,
       planPrice: plan.price,
-      planType: plan.type,
-      allowanceMinutes: plan.allowanceMinutes,
+
+      validity: plan.validity,
+      serviceLevel: plan.serviceLevel,
+      accessMethod: plan.accessMethod,
+
       purchasedAt: command.purchasedAt,
     });
 
