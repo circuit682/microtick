@@ -7,6 +7,7 @@ import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   PaymentIntent,
   PaymentStatus,
@@ -49,6 +50,8 @@ describe("ReceivePaymentConfirmation", () => {
         unit: ValidityUnit.MINUTES,
       }),
 
+      consumptionPolicy: ConsumptionPolicy.USAGE,
+
       serviceLevel: ServiceLevel.create({
         name: "Residential",
       }),
@@ -85,7 +88,6 @@ describe("ReceivePaymentConfirmation", () => {
   }
 
   it("should confirm a payment when a confirmation is received", async () => {
-    // Given
     const repository = new MemoryPaymentIntentRepository();
 
     const payment = createPendingPayment();
@@ -101,19 +103,16 @@ describe("ReceivePaymentConfirmation", () => {
       confirmPayment,
     );
 
-    // When
     await receivePaymentConfirmation.execute({
       reference: "payment-ref-123",
     });
 
-    // Then
     const confirmed = await repository.findByReference("payment-ref-123");
 
     expect(confirmed?.status).toBe(PaymentStatus.COMPLETED);
   });
 
   it("should propagate errors from ConfirmPayment", async () => {
-    // Given
     const repository = new MemoryPaymentIntentRepository();
 
     const confirmPayment = new ConfirmPayment(
@@ -125,7 +124,6 @@ describe("ReceivePaymentConfirmation", () => {
       confirmPayment,
     );
 
-    // When / Then
     await expect(
       receivePaymentConfirmation.execute({
         reference: "unknown-reference",
@@ -134,7 +132,6 @@ describe("ReceivePaymentConfirmation", () => {
   });
 
   it("should ignore duplicate webhook deliveries", async () => {
-    // Given
     const repository = new MemoryPaymentIntentRepository();
 
     const payment = createPendingPayment();
@@ -152,7 +149,6 @@ describe("ReceivePaymentConfirmation", () => {
       confirmPayment,
     );
 
-    // When / Then
     await expect(
       receivePaymentConfirmation.execute({
         reference: "payment-ref-123",

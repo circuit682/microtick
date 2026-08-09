@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import { InitiatePayment } from "@application/payment/InitiatePayment.js";
-import { CreatePlan } from "@application/plan/CreatePlan.js";
 import { PurchasePlan } from "@application/plan/PurchasePlan.js";
+import { CreatePlan } from "@application/plan/CreatePlan.js";
 
-import { Money, PlanType } from "@domain";
+import {
+  AccessMethod,
+  ConsumptionPolicy,
+  Money,
+  PlanType,
+  ServiceLevel,
+  Validity,
+  ValidityUnit,
+} from "@domain";
+
 import { ErrorCode, ValidationError } from "@shared";
 
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
@@ -13,8 +22,33 @@ import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPay
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
 describe("PurchasePlan", () => {
-  it("should request payment for an existing plan", async () => {
-    // Given
+  function createPlanCommand() {
+    return {
+      name: "Quiky",
+      price: 500,
+
+      validity: Validity.create({
+        amount: 30,
+        unit: ValidityUnit.MINUTES,
+      }),
+
+      consumptionPolicy: ConsumptionPolicy.USAGE,
+
+      serviceLevel: ServiceLevel.create({
+        name: "Residential",
+      }),
+
+      accessMethod: AccessMethod.SESSION,
+
+      // Temporary compatibility.
+      type: PlanType.USAGE,
+      allowanceMinutes: 30,
+    };
+  }
+
+  function createPurchasePlanDependencies() {
+    const repository = new MemoryPlanRepository();
+
     const paymentGateway = new FakePaymentGateway();
 
     const paymentIntentRepository = new MemoryPaymentIntentRepository();
@@ -24,18 +58,30 @@ describe("PurchasePlan", () => {
       paymentIntentRepository,
     );
 
-    const repository = new MemoryPlanRepository();
-
     const identifierGenerator = new UlidIdentifierGenerator();
+
+    return {
+      repository,
+      paymentGateway,
+      paymentIntentRepository,
+      initiatePayment,
+      identifierGenerator,
+    };
+  }
+
+  it("should request payment for an existing plan", async () => {
+    // Given
+    const {
+      repository,
+      paymentGateway,
+      paymentIntentRepository,
+      initiatePayment,
+      identifierGenerator,
+    } = createPurchasePlanDependencies();
 
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
-    const createdPlan = await createPlan.execute({
-      name: "Quiky",
-      price: 500,
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
-    });
+    const createdPlan = await createPlan.execute(createPlanCommand());
 
     const purchasePlan = new PurchasePlan(
       repository,
@@ -72,27 +118,12 @@ describe("PurchasePlan", () => {
 
   it("should reject purchasing an inactive plan", async () => {
     // Given
-    const repository = new MemoryPlanRepository();
-
-    const paymentGateway = new FakePaymentGateway();
-
-    const paymentIntentRepository = new MemoryPaymentIntentRepository();
-
-    const initiatePayment = new InitiatePayment(
-      paymentGateway,
-      paymentIntentRepository,
-    );
-
-    const identifierGenerator = new UlidIdentifierGenerator();
+    const { repository, initiatePayment, identifierGenerator } =
+      createPurchasePlanDependencies();
 
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
-    const createdPlan = await createPlan.execute({
-      name: "Quiky",
-      price: 500,
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
-    });
+    const createdPlan = await createPlan.execute(createPlanCommand());
 
     const inactivePlan = createdPlan.deactivate();
 
@@ -124,18 +155,8 @@ describe("PurchasePlan", () => {
 
   it("should reject purchasing a non-existent plan", async () => {
     // Given
-    const repository = new MemoryPlanRepository();
-
-    const paymentGateway = new FakePaymentGateway();
-
-    const paymentIntentRepository = new MemoryPaymentIntentRepository();
-
-    const initiatePayment = new InitiatePayment(
-      paymentGateway,
-      paymentIntentRepository,
-    );
-
-    const identifierGenerator = new UlidIdentifierGenerator();
+    const { repository, initiatePayment, identifierGenerator } =
+      createPurchasePlanDependencies();
 
     const purchasePlan = new PurchasePlan(
       repository,
@@ -163,27 +184,16 @@ describe("PurchasePlan", () => {
 
   it("should return the purchase plan result", async () => {
     // Given
-    const repository = new MemoryPlanRepository();
-
-    const paymentGateway = new FakePaymentGateway();
-
-    const paymentIntentRepository = new MemoryPaymentIntentRepository();
-
-    const initiatePayment = new InitiatePayment(
-      paymentGateway,
+    const {
+      repository,
       paymentIntentRepository,
-    );
-
-    const identifierGenerator = new UlidIdentifierGenerator();
+      initiatePayment,
+      identifierGenerator,
+    } = createPurchasePlanDependencies();
 
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
-    const createdPlan = await createPlan.execute({
-      name: "Quiky",
-      price: 500,
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
-    });
+    const createdPlan = await createPlan.execute(createPlanCommand());
 
     const purchasePlan = new PurchasePlan(
       repository,

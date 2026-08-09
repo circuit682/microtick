@@ -1,6 +1,6 @@
-import { InternetAccess } from "@domain";
+import { InternetAccess, InternetAccessStatus } from "@domain";
 
-import { InternetAccessRepository } from "@application/ports/InternetAccessRepository.js";
+import type { InternetAccessRepository } from "@application/ports/InternetAccessRepository.js";
 
 import { prisma } from "@infrastructure/database/prisma.js";
 
@@ -10,18 +10,22 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
       where: {
         id: access.id,
       },
+
       update: {
         purchaseId: access.purchaseId,
         customerId: access.customerId,
         grantedAt: access.grantedAt,
         expiresAt: access.expiresAt,
+        status: access.status,
       },
+
       create: {
         id: access.id,
         purchaseId: access.purchaseId,
         customerId: access.customerId,
         grantedAt: access.grantedAt,
         expiresAt: access.expiresAt,
+        status: access.status,
       },
     });
   }
@@ -37,12 +41,13 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
       return null;
     }
 
-    return InternetAccess.create({
+    return InternetAccess.reconstitute({
       id: record.id,
       purchaseId: record.purchaseId,
       customerId: record.customerId,
       grantedAt: record.grantedAt,
       expiresAt: record.expiresAt,
+      status: record.status as InternetAccessStatus,
     });
   }
 
@@ -57,12 +62,13 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
       return null;
     }
 
-    return InternetAccess.create({
+    return InternetAccess.reconstitute({
       id: record.id,
       purchaseId: record.purchaseId,
       customerId: record.customerId,
       grantedAt: record.grantedAt,
       expiresAt: record.expiresAt,
+      status: record.status as InternetAccessStatus,
     });
   }
 }

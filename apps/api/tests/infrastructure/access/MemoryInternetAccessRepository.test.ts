@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { InternetAccess } from "@domain";
+import { InternetAccess, InternetAccessStatus } from "@domain";
 
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
 
@@ -10,6 +10,9 @@ describe("MemoryInternetAccessRepository", () => {
       id: "access-001",
       purchaseId: "purchase-001",
       customerId: "customer-001",
+
+      status: InternetAccessStatus.GRANTED,
+
       grantedAt: new Date("2026-08-01T10:00:00Z"),
       expiresAt: new Date("2026-08-01T10:30:00Z"),
     });
@@ -26,6 +29,7 @@ describe("MemoryInternetAccessRepository", () => {
 
     expect(stored).not.toBeNull();
     expect(stored?.id).toBe(access.id);
+    expect(stored?.status).toBe(InternetAccessStatus.GRANTED);
   });
 
   it("retrieves access by customer id", async () => {
@@ -39,6 +43,7 @@ describe("MemoryInternetAccessRepository", () => {
 
     expect(stored).not.toBeNull();
     expect(stored?.purchaseId).toBe("purchase-001");
+    expect(stored?.status).toBe(InternetAccessStatus.GRANTED);
   });
 
   it("returns null when purchase does not exist", async () => {

@@ -6,6 +6,7 @@ import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   PaymentIntent,
   PaymentStatus,
@@ -47,6 +48,8 @@ describe("ConfirmPayment", () => {
         amount: 30,
         unit: ValidityUnit.MINUTES,
       }),
+
+      consumptionPolicy: ConsumptionPolicy.USAGE,
 
       serviceLevel: ServiceLevel.create({
         name: "Residential",

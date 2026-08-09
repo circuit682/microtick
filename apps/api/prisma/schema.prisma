@@ -70,18 +70,28 @@ model Purchase {
 
   internetAccess   InternetAccess?
 }
+enum InternetAccessStatus {
+  GRANTED
+  PROVISIONING
+  ACTIVE
+  EXPIRED
+  REVOKED
+  FAILED
+}
 
 model InternetAccess {
-  id          String    @id
+  id          String               @id
 
-  purchaseId  String    @unique
-  purchase    Purchase  @relation(fields: [purchaseId], references: [id])
+  purchaseId  String               @unique
+  purchase    Purchase             @relation(fields: [purchaseId], references: [id])
 
   customerId  String
+
+  status      InternetAccessStatus
 
   grantedAt   DateTime
   expiresAt   DateTime
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 }

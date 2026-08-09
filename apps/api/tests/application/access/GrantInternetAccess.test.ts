@@ -4,6 +4,7 @@ import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js"
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   Plan,
   PlanType,
@@ -26,6 +27,8 @@ describe("GrantInternetAccess", () => {
         amount: 1,
         unit: ValidityUnit.DAYS,
       }),
+
+      consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
 
       serviceLevel: ServiceLevel.create({
         name: "Residential",

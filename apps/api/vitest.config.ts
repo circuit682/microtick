@@ -23,6 +23,9 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     setupFiles: ["tests/setup.ts"],
 
+    // Integration tests share one PostgreSQL database.
+    // Run test files sequentially to prevent database cleanup
+    // in one file from interfering with another file.
     fileParallelism: false,
     maxWorkers: 1,
   },

@@ -1,7 +1,8 @@
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   Purchase,
   ServiceLevel,
@@ -27,10 +28,8 @@ describe("Purchase", () => {
     });
   }
 
-  it("creates a purchase from a plan snapshot", () => {
-    const purchasedAt = new Date("2026-01-01T10:00:00Z");
-
-    const purchase = Purchase.create({
+  function createUsagePurchaseProps() {
+    return {
       paymentIntentId: "payment-intent-1",
       id: "purchase-001",
       customerId: "customer-001",
@@ -40,9 +39,19 @@ describe("Purchase", () => {
       planPrice: Money.fromMinorUnits(500),
 
       validity: createValidity(),
+      consumptionPolicy: ConsumptionPolicy.USAGE,
       serviceLevel: createServiceLevel(),
       accessMethod: AccessMethod.SESSION,
 
+      purchasedAt: new Date("2026-01-01T10:00:00Z"),
+    };
+  }
+
+  it("creates a purchase from a plan snapshot", () => {
+    const purchasedAt = new Date("2026-01-01T10:00:00Z");
+
+    const purchase = Purchase.create({
+      ...createUsagePurchaseProps(),
       purchasedAt,
     });
 
@@ -51,9 +60,12 @@ describe("Purchase", () => {
 
     expect(purchase.planId).toBe("quiky");
     expect(purchase.planName).toBe("Quiky");
+
     expect(purchase.planPrice.equals(Money.fromMinorUnits(500))).toBe(true);
 
     expect(purchase.validity.equals(createValidity())).toBe(true);
+
+    expect(purchase.consumptionPolicy).toBe(ConsumptionPolicy.USAGE);
 
     expect(purchase.serviceLevel.equals(createServiceLevel())).toBe(true);
 
@@ -66,19 +78,8 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
-          paymentIntentId: "payment-intent-1",
-          id: "purchase-001",
+          ...createUsagePurchaseProps(),
           customerId: "",
-
-          planId: "quiky",
-          planName: "Quiky",
-          planPrice: Money.fromMinorUnits(500),
-
-          validity: createValidity(),
-          serviceLevel: createServiceLevel(),
-          accessMethod: AccessMethod.SESSION,
-
-          purchasedAt: new Date(),
         }),
       ErrorCode.PURCHASE_INVALID_CUSTOMER,
     );
@@ -88,19 +89,8 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
-          paymentIntentId: "payment-intent-1",
-          id: "purchase-001",
-          customerId: "customer-001",
-
+          ...createUsagePurchaseProps(),
           planId: "",
-          planName: "Quiky",
-          planPrice: Money.fromMinorUnits(500),
-
-          validity: createValidity(),
-          serviceLevel: createServiceLevel(),
-          accessMethod: AccessMethod.SESSION,
-
-          purchasedAt: new Date(),
         }),
       ErrorCode.PURCHASE_INVALID_PLAN,
     );
@@ -110,19 +100,8 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
-          paymentIntentId: "payment-intent-1",
-          id: "purchase-001",
-          customerId: "customer-001",
-
-          planId: "quiky",
+          ...createUsagePurchaseProps(),
           planName: "",
-          planPrice: Money.fromMinorUnits(500),
-
-          validity: createValidity(),
-          serviceLevel: createServiceLevel(),
-          accessMethod: AccessMethod.SESSION,
-
-          purchasedAt: new Date(),
         }),
       ErrorCode.PURCHASE_INVALID_PLAN,
     );
@@ -132,19 +111,8 @@ describe("Purchase", () => {
     expectValidationError(
       () =>
         Purchase.create({
-          paymentIntentId: "payment-intent-1",
-          id: "purchase-001",
-          customerId: "customer-001",
-
-          planId: "quiky",
-          planName: "Quiky",
+          ...createUsagePurchaseProps(),
           planPrice: Money.fromMinorUnits(0),
-
-          validity: createValidity(),
-          serviceLevel: createServiceLevel(),
-          accessMethod: AccessMethod.SESSION,
-
-          purchasedAt: new Date(),
         }),
       ErrorCode.PURCHASE_INVALID_PRICE,
     );
@@ -167,6 +135,8 @@ describe("Purchase", () => {
         unit: ValidityUnit.DAYS,
       }),
 
+      consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
+
       serviceLevel: createServiceLevel(),
 
       accessMethod: AccessMethod.WALL_CLOCK,
@@ -183,27 +153,15 @@ describe("Purchase", () => {
       ),
     ).toBe(true);
 
+    expect(purchase.consumptionPolicy).toBe(ConsumptionPolicy.CONTINUOUS);
+
     expect(purchase.accessMethod).toBe(AccessMethod.WALL_CLOCK);
 
     expect(purchase.purchasedAt).toEqual(purchasedAt);
   });
 
   it("captures the purchased plan as an immutable snapshot", () => {
-    const purchase = Purchase.create({
-      paymentIntentId: "payment-intent-1",
-      id: "purchase-001",
-      customerId: "customer-001",
-
-      planId: "quiky",
-      planName: "Quiky",
-      planPrice: Money.fromMinorUnits(500),
-
-      validity: createValidity(),
-      serviceLevel: createServiceLevel(),
-      accessMethod: AccessMethod.SESSION,
-
-      purchasedAt: new Date("2026-01-01T10:00:00Z"),
-    });
+    const purchase = Purchase.create(createUsagePurchaseProps());
 
     expect(purchase.planId).toBe("quiky");
     expect(purchase.planName).toBe("Quiky");
@@ -211,6 +169,8 @@ describe("Purchase", () => {
     expect(purchase.planPrice.equals(Money.fromMinorUnits(500))).toBe(true);
 
     expect(purchase.validity.equals(createValidity())).toBe(true);
+
+    expect(purchase.consumptionPolicy).toBe(ConsumptionPolicy.USAGE);
 
     expect(purchase.serviceLevel.equals(createServiceLevel())).toBe(true);
 

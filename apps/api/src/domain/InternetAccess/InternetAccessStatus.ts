@@ -1,0 +1,8 @@
+export enum InternetAccessStatus {
+  GRANTED = "GRANTED",
+  PROVISIONING = "PROVISIONING",
+  ACTIVE = "ACTIVE",
+  EXPIRED = "EXPIRED",
+  REVOKED = "REVOKED",
+  FAILED = "FAILED",
+}
