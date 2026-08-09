@@ -14,16 +14,7 @@ export class PaymentIntentMapper {
     });
   }
 
-  static toPersistence(paymentIntent: PaymentIntent): {
-    id: string;
-    planId: string;
-    reference: string;
-    phoneNumber: string;
-    amountMinor: number;
-    status: string;
-    providerReference: string | null;
-    checkoutUrl: string | null;
-  } {
+  static toPersistence(paymentIntent: PaymentIntent) {
     return {
       id: paymentIntent.id,
       planId: paymentIntent.planId,
@@ -31,8 +22,6 @@ export class PaymentIntentMapper {
       phoneNumber: paymentIntent.phoneNumber,
       amountMinor: paymentIntent.amount.minorUnits,
       status: paymentIntent.status,
-      providerReference: null,
-      checkoutUrl: null,
     };
   }
 }

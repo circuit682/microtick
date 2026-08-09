@@ -15,10 +15,20 @@ export class InitiatePayment {
   async execute(paymentIntent: PaymentIntent): Promise<PaymentGatewayResponse> {
     await this.paymentIntentRepository.save(paymentIntent);
 
-    return this.paymentGateway.requestPayment({
+    const response = await this.paymentGateway.requestPayment({
       amount: paymentIntent.amount,
       phoneNumber: paymentIntent.phoneNumber,
       reference: paymentIntent.reference,
     });
+
+    await this.paymentIntentRepository.updateProviderMetadata(
+      paymentIntent.id,
+      {
+        providerReference: response.providerRequestId,
+        checkoutUrl: response.checkoutUrl,
+      },
+    );
+
+    return response;
   }
 }

@@ -1,4 +1,8 @@
-import type { PaymentIntentRepository } from "@application/payment/PaymentIntentRepository.js";
+import type {
+  PaymentIntentRepository,
+  PaymentProviderMetadata,
+} from "@application/payment/PaymentIntentRepository.js";
+
 import { PaymentIntent } from "@domain";
 
 import { prisma } from "@infrastructure/database/prisma.js";
@@ -15,6 +19,21 @@ export class PrismaPaymentIntentRepository implements PaymentIntentRepository {
       },
       create: data,
       update: data,
+    });
+  }
+
+  async updateProviderMetadata(
+    paymentIntentId: string,
+    metadata: PaymentProviderMetadata,
+  ): Promise<void> {
+    await prisma.paymentIntent.update({
+      where: {
+        id: paymentIntentId,
+      },
+      data: {
+        providerReference: metadata.providerReference,
+        checkoutUrl: metadata.checkoutUrl,
+      },
     });
   }
 

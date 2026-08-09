@@ -8,10 +8,11 @@ import { Money, PaymentIntent } from "@domain";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 
 describe("InitiatePayment", () => {
-  it("should initiate a payment using the configured payment gateway", async () => {
+  it("should initiate a payment and persist provider metadata", async () => {
     const gateway: PaymentGateway = {
       requestPayment: vi.fn().mockResolvedValue({
         providerRequestId: "provider-123",
+        checkoutUrl: "https://sandbox.intasend.com/checkout/provider-123",
       }),
     };
 
@@ -34,6 +35,7 @@ describe("InitiatePayment", () => {
 
     expect(response).toEqual({
       providerRequestId: "provider-123",
+      checkoutUrl: "https://sandbox.intasend.com/checkout/provider-123",
     });
 
     expect(gateway.requestPayment).toHaveBeenCalledWith({

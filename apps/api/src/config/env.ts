@@ -2,9 +2,7 @@ function requireEnv(name: string): string {
   const value = process.env[name];
 
   if (!value) {
-    throw new Error(
-      `Missing required environment variable: ${name}`,
-    );
+    throw new Error(`Missing required environment variable: ${name}`);
   }
 
   return value;
@@ -19,21 +17,13 @@ export const env = {
 
   get intaSend() {
     return {
-      publishableKey: requireEnv(
-        "INTASEND_PUBLISHABLE_KEY",
-      ),
+      publishableKey: requireEnv("INTASEND_PUBLISHABLE_KEY"),
 
-      baseUrl:
-        process.env.INTASEND_BASE_URL ??
-        "https://sandbox.intasend.com",
+      baseUrl: requireEnv("INTASEND_BASE_URL"),
 
-      host:
-        process.env.APP_HOST ??
-        "http://localhost:3000",
+      host: requireEnv("APP_HOST"),
 
-      redirectUrl:
-        process.env.PAYMENT_REDIRECT_URL ??
-        "http://localhost:3000/payment/complete",
+      redirectUrl: requireEnv("PAYMENT_REDIRECT_URL"),
     };
   },
 };
