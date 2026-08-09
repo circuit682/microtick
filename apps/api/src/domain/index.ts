@@ -6,3 +6,4 @@ export * from "./plan/index.js";
 export * from "./purchase/index.js";
 export * from "./ServiceLevel/index.js";
 export * from "./Validity/index.js";
+export * from "./ConsumptionPolicy/index.js";

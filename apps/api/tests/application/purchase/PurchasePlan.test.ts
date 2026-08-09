@@ -4,6 +4,7 @@ import { PurchasePlan } from "@application/purchase/PurchasePlan.js";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   Plan,
   PlanType,
@@ -27,6 +28,8 @@ describe("PurchasePlan", () => {
         amount: 30,
         unit: ValidityUnit.MINUTES,
       }),
+
+      consumptionPolicy: ConsumptionPolicy.USAGE,
 
       serviceLevel: ServiceLevel.create({
         name: "Residential",
@@ -68,6 +71,8 @@ describe("PurchasePlan", () => {
     expect(purchase.planPrice.equals(plan.price)).toBe(true);
 
     expect(purchase.validity.equals(plan.validity)).toBe(true);
+
+    expect(purchase.consumptionPolicy).toBe(plan.consumptionPolicy);
 
     expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
 
@@ -118,6 +123,8 @@ describe("PurchasePlan", () => {
     expect(purchase.planPrice.equals(plan.price)).toBe(true);
 
     expect(purchase.validity.equals(plan.validity)).toBe(true);
+
+    expect(purchase.consumptionPolicy).toBe(plan.consumptionPolicy);
 
     expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
 

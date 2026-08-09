@@ -2,6 +2,7 @@ import type { Plan as PrismaPlan } from "@generated/prisma/client.js";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   Plan,
   PlanType,
@@ -23,6 +24,11 @@ export class PlanMapper {
         amount: plan.allowanceMinutes,
         unit: ValidityUnit.MINUTES,
       }),
+
+      consumptionPolicy:
+        plan.type === PlanType.TIME
+          ? ConsumptionPolicy.CONTINUOUS
+          : ConsumptionPolicy.USAGE,
 
       serviceLevel: ServiceLevel.create({
         name: "Residential",

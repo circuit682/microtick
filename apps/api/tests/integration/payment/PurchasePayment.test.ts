@@ -4,7 +4,14 @@ import { createServer } from "../../../src/server.js";
 
 import { CreatePlan } from "@application/plan/CreatePlan.js";
 
-import { PlanType } from "@domain";
+import {
+  AccessMethod,
+  ConsumptionPolicy,
+  PlanType,
+  ServiceLevel,
+  Validity,
+  ValidityUnit,
+} from "@domain";
 
 import { prisma } from "@infrastructure/database/prisma.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
@@ -27,6 +34,12 @@ describe("POST /payments/purchase", () => {
     await prisma.plan.deleteMany();
   });
 
+  function residentialService(): ServiceLevel {
+    return ServiceLevel.create({
+      name: "Residential",
+    });
+  }
+
   it("creates a hosted checkout session", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -45,6 +58,21 @@ describe("POST /payments/purchase", () => {
     const createdPlan = await createPlan.execute({
       name: "Quiky",
       price: 500,
+
+      validity: Validity.create({
+        amount: 30,
+        unit: ValidityUnit.MINUTES,
+      }),
+
+      consumptionPolicy: ConsumptionPolicy.USAGE,
+
+      serviceLevel: residentialService(),
+
+      accessMethod: AccessMethod.SESSION,
+
+      //
+      // Temporary compatibility.
+      //
       type: PlanType.USAGE,
       allowanceMinutes: 30,
     });

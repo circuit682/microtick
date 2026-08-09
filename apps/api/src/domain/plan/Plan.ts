@@ -1,6 +1,12 @@
 import { ErrorCode, ValidationError } from "@shared";
 
-import { AccessMethod, Money, ServiceLevel, Validity } from "@domain";
+import {
+  AccessMethod,
+  ConsumptionPolicy,
+  Money,
+  ServiceLevel,
+  Validity,
+} from "@domain";
 
 import { PlanType } from "./PlanType.js";
 
@@ -10,6 +16,7 @@ export interface CreatePlanProps {
   price: Money;
 
   validity: Validity;
+  consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
 
@@ -24,6 +31,7 @@ export interface PlanProps {
   price: Money;
 
   validity: Validity;
+  consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
 
@@ -118,8 +126,10 @@ export class Plan {
       );
     }
 
+    //
     // Temporary compatibility until Validity
     // fully replaces allowanceMinutes.
+    //
     if (props.allowanceMinutes <= 0) {
       throw new ValidationError(
         ErrorCode.PLAN_INVALID_ALLOWANCE,
@@ -145,6 +155,10 @@ export class Plan {
 
   get validity(): Validity {
     return this.props.validity;
+  }
+
+  get consumptionPolicy(): ConsumptionPolicy {
+    return this.props.consumptionPolicy;
   }
 
   get serviceLevel(): ServiceLevel {

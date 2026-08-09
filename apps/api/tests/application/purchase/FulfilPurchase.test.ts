@@ -5,6 +5,7 @@ import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   Plan,
   PlanType,
@@ -31,6 +32,8 @@ describe("FulfilPurchase", () => {
         amount: 30,
         unit: ValidityUnit.MINUTES,
       }),
+
+      consumptionPolicy: ConsumptionPolicy.USAGE,
 
       serviceLevel: ServiceLevel.create({
         name: "Residential",
@@ -99,11 +102,14 @@ describe("FulfilPurchase", () => {
     expect(purchase.customerId).toBe("customer-001");
 
     expect(purchase.planId).toBe(plan.id);
+
     expect(purchase.planName).toBe(plan.name);
 
     expect(purchase.planPrice.equals(plan.price)).toBe(true);
 
     expect(purchase.validity.equals(plan.validity)).toBe(true);
+
+    expect(purchase.consumptionPolicy).toBe(plan.consumptionPolicy);
 
     expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
 
@@ -185,6 +191,8 @@ describe("FulfilPurchase", () => {
 
     expect(purchase.validity.equals(updatedPlan.validity)).toBe(true);
 
+    expect(purchase.consumptionPolicy).toBe(updatedPlan.consumptionPolicy);
+
     expect(purchase.serviceLevel.equals(updatedPlan.serviceLevel)).toBe(true);
 
     expect(purchase.accessMethod).toBe(updatedPlan.accessMethod);
@@ -234,7 +242,11 @@ describe("FulfilPurchase", () => {
       planPrice: plan.price,
 
       validity: plan.validity,
+
+      consumptionPolicy: plan.consumptionPolicy,
+
       serviceLevel: plan.serviceLevel,
+
       accessMethod: plan.accessMethod,
 
       purchasedAt: new Date(),

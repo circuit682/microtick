@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   Plan,
   PlanType,
@@ -41,7 +42,11 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(500),
 
         validity: sessionValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.USAGE,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.SESSION,
 
         // Temporary compatibility.
@@ -50,12 +55,16 @@ describe("Plan", () => {
       });
 
       expect(plan.id).toBe("quiky-30");
+
       expect(plan.name).toBe("Quiky");
+
       expect(plan.price).toEqual(Money.fromMinorUnits(500));
 
-      expect(plan.validity).toEqual(sessionValidity());
+      expect(plan.validity.equals(sessionValidity())).toBe(true);
 
-      expect(plan.serviceLevel).toEqual(residentialService());
+      expect(plan.consumptionPolicy).toBe(ConsumptionPolicy.USAGE);
+
+      expect(plan.serviceLevel.equals(residentialService())).toBe(true);
 
       expect(plan.accessMethod).toBe(AccessMethod.SESSION);
 
@@ -73,7 +82,11 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(5000),
 
         validity: wallClockValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.WALL_CLOCK,
 
         // Temporary compatibility.
@@ -81,7 +94,9 @@ describe("Plan", () => {
         allowanceMinutes: 1440,
       });
 
-      expect(plan.validity).toEqual(wallClockValidity());
+      expect(plan.validity.equals(wallClockValidity())).toBe(true);
+
+      expect(plan.consumptionPolicy).toBe(ConsumptionPolicy.CONTINUOUS);
 
       expect(plan.accessMethod).toBe(AccessMethod.WALL_CLOCK);
 
@@ -98,7 +113,11 @@ describe("Plan", () => {
           price: Money.fromMinorUnits(0),
 
           validity: sessionValidity(),
+
+          consumptionPolicy: ConsumptionPolicy.USAGE,
+
           serviceLevel: residentialService(),
+
           accessMethod: AccessMethod.SESSION,
 
           type: PlanType.USAGE,
@@ -115,7 +134,11 @@ describe("Plan", () => {
           price: Money.fromMinorUnits(500),
 
           validity: sessionValidity(),
+
+          consumptionPolicy: ConsumptionPolicy.USAGE,
+
           serviceLevel: residentialService(),
+
           accessMethod: AccessMethod.SESSION,
 
           type: PlanType.USAGE,
@@ -132,7 +155,11 @@ describe("Plan", () => {
           price: Money.fromMinorUnits(500),
 
           validity: sessionValidity(),
+
+          consumptionPolicy: ConsumptionPolicy.USAGE,
+
           serviceLevel: residentialService(),
+
           accessMethod: AccessMethod.SESSION,
 
           type: PlanType.USAGE,
@@ -149,7 +176,11 @@ describe("Plan", () => {
           price: Money.fromMinorUnits(500),
 
           validity: sessionValidity(),
+
+          consumptionPolicy: ConsumptionPolicy.USAGE,
+
           serviceLevel: residentialService(),
+
           accessMethod: AccessMethod.SESSION,
 
           type: PlanType.USAGE,
@@ -167,17 +198,24 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(500),
 
         validity: sessionValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.USAGE,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.SESSION,
 
         type: PlanType.USAGE,
         allowanceMinutes: 30,
+
         active: true,
       });
 
       expect(plan.active).toBe(true);
 
-      expect(plan.validity).toEqual(sessionValidity());
+      expect(plan.validity.equals(sessionValidity())).toBe(true);
+
+      expect(plan.consumptionPolicy).toBe(ConsumptionPolicy.USAGE);
 
       expect(plan.accessMethod).toBe(AccessMethod.SESSION);
     });
@@ -189,17 +227,24 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(5000),
 
         validity: wallClockValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.WALL_CLOCK,
 
         type: PlanType.TIME,
         allowanceMinutes: 1440,
+
         active: false,
       });
 
       expect(plan.active).toBe(false);
 
-      expect(plan.validity).toEqual(wallClockValidity());
+      expect(plan.validity.equals(wallClockValidity())).toBe(true);
+
+      expect(plan.consumptionPolicy).toBe(ConsumptionPolicy.CONTINUOUS);
 
       expect(plan.accessMethod).toBe(AccessMethod.WALL_CLOCK);
     });
@@ -213,7 +258,11 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(500),
 
         validity: sessionValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.USAGE,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.SESSION,
 
         type: PlanType.USAGE,
@@ -236,11 +285,16 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(500),
 
         validity: sessionValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.USAGE,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.SESSION,
 
         type: PlanType.USAGE,
         allowanceMinutes: 30,
+
         active: false,
       });
 
@@ -260,7 +314,11 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(500),
 
         validity: sessionValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.USAGE,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.SESSION,
 
         type: PlanType.USAGE,
@@ -277,11 +335,16 @@ describe("Plan", () => {
         price: Money.fromMinorUnits(500),
 
         validity: sessionValidity(),
+
+        consumptionPolicy: ConsumptionPolicy.USAGE,
+
         serviceLevel: residentialService(),
+
         accessMethod: AccessMethod.SESSION,
 
         type: PlanType.USAGE,
         allowanceMinutes: 30,
+
         active: false,
       });
 

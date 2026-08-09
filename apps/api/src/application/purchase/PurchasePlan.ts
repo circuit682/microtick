@@ -20,6 +20,7 @@ export class PurchasePlan {
       id: this.identifierGenerator.generate(),
 
       paymentIntentId: request.paymentIntentId,
+
       customerId: request.customerId,
 
       planId: request.plan.id,
@@ -27,7 +28,11 @@ export class PurchasePlan {
       planPrice: request.plan.price,
 
       validity: request.plan.validity,
+
+      consumptionPolicy: request.plan.consumptionPolicy,
+
       serviceLevel: request.plan.serviceLevel,
+
       accessMethod: request.plan.accessMethod,
 
       purchasedAt: new Date(),

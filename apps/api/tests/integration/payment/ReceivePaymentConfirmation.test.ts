@@ -4,7 +4,17 @@ import { createServer } from "../../../src/server.js";
 
 import { CreatePlan } from "@application/plan/CreatePlan.js";
 
-import { Money, PaymentIntent, PaymentStatus, PlanType } from "@domain";
+import {
+  AccessMethod,
+  ConsumptionPolicy,
+  Money,
+  PaymentIntent,
+  PaymentStatus,
+  PlanType,
+  ServiceLevel,
+  Validity,
+  ValidityUnit,
+} from "@domain";
 
 import { prisma } from "@infrastructure/database/prisma.js";
 import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
@@ -26,6 +36,12 @@ describe("POST /payments/intasend/webhook", () => {
     await prisma.plan.deleteMany();
   });
 
+  function residentialService(): ServiceLevel {
+    return ServiceLevel.create({
+      name: "Residential",
+    });
+  }
+
   it("confirms payment, creates a purchase and grants internet access", async () => {
     // Given
     const identifierGenerator = new UlidIdentifierGenerator();
@@ -39,17 +55,24 @@ describe("POST /payments/intasend/webhook", () => {
     const plan = await createPlan.execute({
       name: "Daily",
       price: 500,
-      type: PlanType.TIME,
-      allowanceMinutes: 30,
-    });
-    console.log("Created plan:", plan);
 
-    console.log(
-      "Plan in DB:",
-      await prisma.plan.findUnique({
-        where: { id: plan.id },
+      validity: Validity.create({
+        amount: 1,
+        unit: ValidityUnit.DAYS,
       }),
-    );
+
+      consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
+
+      serviceLevel: residentialService(),
+
+      accessMethod: AccessMethod.WALL_CLOCK,
+
+      //
+      // Temporary compatibility.
+      //
+      type: PlanType.TIME,
+      allowanceMinutes: 1440,
+    });
 
     const payment = PaymentIntent.create({
       id: identifierGenerator.generate(),
@@ -75,10 +98,6 @@ describe("POST /payments/intasend/webhook", () => {
     });
 
     // Then
-    // expect(response.statusCode).toBe(200);
-    console.log(response.statusCode);
-    console.log(response.body);
-
     expect(response.statusCode).toBe(200);
 
     const confirmed =

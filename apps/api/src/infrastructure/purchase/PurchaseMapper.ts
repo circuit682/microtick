@@ -2,9 +2,10 @@ import type { Purchase as PrismaPurchase } from "@generated/prisma/client.js";
 
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
-  Purchase,
   PlanType,
+  Purchase,
   ServiceLevel,
   Validity,
   ValidityUnit,
@@ -22,13 +23,18 @@ export class PurchaseMapper {
       planPrice: Money.fromMinorUnits(purchase.planPriceMinor),
 
       //
-      // Temporary compatibility until the database
-      // schema is migrated.
+      // Temporary compatibility until the
+      // database schema is migrated.
       //
       validity: Validity.create({
         amount: purchase.allowanceMinutes,
         unit: ValidityUnit.MINUTES,
       }),
+
+      consumptionPolicy:
+        purchase.planType === PlanType.TIME
+          ? ConsumptionPolicy.CONTINUOUS
+          : ConsumptionPolicy.USAGE,
 
       serviceLevel: ServiceLevel.create({
         name: "Default",
@@ -64,10 +70,11 @@ export class PurchaseMapper {
       planPriceMinor: purchase.planPrice.minorUnits,
 
       //
-      // Temporary compatibility.
+      // Temporary compatibility until the
+      // database schema is migrated.
       //
       planType:
-        purchase.accessMethod === AccessMethod.WALL_CLOCK
+        purchase.consumptionPolicy === ConsumptionPolicy.CONTINUOUS
           ? PlanType.TIME
           : PlanType.USAGE,
 

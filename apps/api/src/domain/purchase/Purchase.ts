@@ -1,6 +1,12 @@
 import { ErrorCode, ValidationError } from "@shared";
 
-import { AccessMethod, Money, ServiceLevel, Validity } from "@domain";
+import {
+  AccessMethod,
+  ConsumptionPolicy,
+  Money,
+  ServiceLevel,
+  Validity,
+} from "@domain";
 
 export interface CreatePurchaseProps {
   id: string;
@@ -12,6 +18,7 @@ export interface CreatePurchaseProps {
   planPrice: Money;
 
   validity: Validity;
+  consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
 
@@ -28,6 +35,7 @@ export interface PurchaseProps {
   planPrice: Money;
 
   validity: Validity;
+  consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
 
@@ -125,6 +133,10 @@ export class Purchase {
 
   get validity(): Validity {
     return this.props.validity;
+  }
+
+  get consumptionPolicy(): ConsumptionPolicy {
+    return this.props.consumptionPolicy;
   }
 
   get serviceLevel(): ServiceLevel {

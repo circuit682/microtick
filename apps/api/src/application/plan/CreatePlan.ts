@@ -1,11 +1,11 @@
 import {
   AccessMethod,
+  ConsumptionPolicy,
   Money,
   Plan,
   PlanType,
   ServiceLevel,
   Validity,
-  ValidityUnit,
 } from "@domain";
 
 import type { IdentifierGenerator } from "@shared/identity/IdentifierGenerator.js";
@@ -15,6 +15,16 @@ import type { PlanRepository } from "./PlanRepository.js";
 export interface CreatePlanCommand {
   name: string;
   price: number;
+
+  validity: Validity;
+  consumptionPolicy: ConsumptionPolicy;
+  serviceLevel: ServiceLevel;
+  accessMethod: AccessMethod;
+
+  //
+  // Temporary compatibility until the
+  // persistence layer no longer requires it.
+  //
   type: PlanType;
   allowanceMinutes: number;
 }
@@ -28,27 +38,22 @@ export class CreatePlan {
   async execute(command: CreatePlanCommand): Promise<Plan> {
     const plan = Plan.create({
       id: this.identifierGenerator.generate(),
+
       name: command.name,
+
       price: Money.fromMinorUnits(command.price),
 
-      validity: Validity.create({
-        amount: command.type === PlanType.TIME ? 1 : command.allowanceMinutes,
-        unit:
-          command.type === PlanType.TIME
-            ? ValidityUnit.DAYS
-            : ValidityUnit.MINUTES,
-      }),
+      validity: command.validity,
 
-      serviceLevel: ServiceLevel.create({
-        name: "Residential",
-      }),
+      consumptionPolicy: command.consumptionPolicy,
 
-      accessMethod:
-        command.type === PlanType.TIME
-          ? AccessMethod.WALL_CLOCK
-          : AccessMethod.SESSION,
+      serviceLevel: command.serviceLevel,
 
+      accessMethod: command.accessMethod,
+
+      //
       // Temporary compatibility.
+      //
       type: command.type,
       allowanceMinutes: command.allowanceMinutes,
     });

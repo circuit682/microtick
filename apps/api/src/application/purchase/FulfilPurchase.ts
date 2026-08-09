@@ -42,6 +42,7 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
 
     const purchase = Purchase.create({
       id: this.identifierGenerator.generate(),
+
       paymentIntentId: command.paymentId,
       customerId: command.customerId,
 
@@ -50,7 +51,11 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
       planPrice: plan.price,
 
       validity: plan.validity,
+
+      consumptionPolicy: plan.consumptionPolicy,
+
       serviceLevel: plan.serviceLevel,
+
       accessMethod: plan.accessMethod,
 
       purchasedAt: command.purchasedAt,
