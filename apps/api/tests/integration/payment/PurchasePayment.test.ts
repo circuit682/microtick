@@ -7,7 +7,6 @@ import { CreatePlan } from "@application/plan/CreatePlan.js";
 import {
   AccessMethod,
   ConsumptionPolicy,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
@@ -69,12 +68,6 @@ describe("POST /payments/purchase", () => {
       serviceLevel: residentialService(),
 
       accessMethod: AccessMethod.SESSION,
-
-      //
-      // Temporary compatibility.
-      //
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
     });
 
     const server = createServer();
@@ -97,4 +90,5 @@ describe("POST /payments/purchase", () => {
 
     await server.close();
   });
+
 });

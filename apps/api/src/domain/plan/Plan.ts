@@ -8,8 +8,6 @@ import {
   Validity,
 } from "@domain";
 
-import { PlanType } from "./PlanType.js";
-
 export interface CreatePlanProps {
   id: string;
   name: string;
@@ -19,10 +17,6 @@ export interface CreatePlanProps {
   consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
-
-  // Temporary compatibility.
-  type: PlanType;
-  allowanceMinutes: number;
 }
 
 export interface PlanProps {
@@ -34,10 +28,6 @@ export interface PlanProps {
   consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
-
-  // Temporary compatibility.
-  type: PlanType;
-  allowanceMinutes: number;
 
   active: boolean;
 }
@@ -125,20 +115,6 @@ export class Plan {
         },
       );
     }
-
-    //
-    // Temporary compatibility until Validity
-    // fully replaces allowanceMinutes.
-    //
-    if (props.allowanceMinutes <= 0) {
-      throw new ValidationError(
-        ErrorCode.PLAN_INVALID_ALLOWANCE,
-        "Plan allowance must be greater than zero.",
-        {
-          attemptedAllowanceMinutes: props.allowanceMinutes,
-        },
-      );
-    }
   }
 
   get id(): string {
@@ -167,20 +143,6 @@ export class Plan {
 
   get accessMethod(): AccessMethod {
     return this.props.accessMethod;
-  }
-
-  /**
-   * Temporary compatibility.
-   */
-  get type(): PlanType {
-    return this.props.type;
-  }
-
-  /**
-   * Temporary compatibility.
-   */
-  get allowanceMinutes(): number {
-    return this.props.allowanceMinutes;
   }
 
   get active(): boolean {

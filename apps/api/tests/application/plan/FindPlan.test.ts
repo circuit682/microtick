@@ -8,7 +8,6 @@ import {
   ConsumptionPolicy,
   Money,
   Plan,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
@@ -25,7 +24,6 @@ describe("FindPlan", () => {
   }
 
   it("should retrieve a previously created plan", async () => {
-    // Given
     const repository = new MemoryPlanRepository();
 
     const identifierGenerator = new UlidIdentifierGenerator();
@@ -35,7 +33,7 @@ describe("FindPlan", () => {
     const findPlan = new FindPlan(repository);
 
     const createdPlan = await createPlan.execute({
-      name: "Starter",
+      name: "Quiky",
       price: 500,
 
       validity: Validity.create({
@@ -48,21 +46,15 @@ describe("FindPlan", () => {
       serviceLevel: residentialService(),
 
       accessMethod: AccessMethod.SESSION,
-
-      // Temporary compatibility.
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
     });
 
-    // When
     const plan = await findPlan.execute(createdPlan.id);
 
-    // Then
     expect(plan).toBeInstanceOf(Plan);
 
     expect(plan?.id).toBe(createdPlan.id);
 
-    expect(plan?.name).toBe("Starter");
+    expect(plan?.name).toBe("Quiky");
 
     expect(plan?.price.equals(Money.fromMinorUnits(500))).toBe(true);
 
@@ -80,10 +72,6 @@ describe("FindPlan", () => {
     expect(plan?.serviceLevel.equals(residentialService())).toBe(true);
 
     expect(plan?.accessMethod).toBe(AccessMethod.SESSION);
-
-    // Temporary compatibility.
-    expect(plan?.type).toBe(PlanType.USAGE);
-    expect(plan?.allowanceMinutes).toBe(30);
 
     expect(plan?.active).toBe(true);
   });

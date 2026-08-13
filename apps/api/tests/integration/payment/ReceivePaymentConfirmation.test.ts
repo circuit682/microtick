@@ -10,7 +10,6 @@ import {
   Money,
   PaymentIntent,
   PaymentStatus,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
@@ -66,12 +65,6 @@ describe("POST /payments/intasend/webhook", () => {
       serviceLevel: residentialService(),
 
       accessMethod: AccessMethod.WALL_CLOCK,
-
-      //
-      // Temporary compatibility.
-      //
-      type: PlanType.TIME,
-      allowanceMinutes: 1440,
     });
 
     const payment = PaymentIntent.create({

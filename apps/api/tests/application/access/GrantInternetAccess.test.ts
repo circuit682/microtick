@@ -7,21 +7,29 @@ import {
   ConsumptionPolicy,
   Money,
   Plan,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
 } from "@domain";
 
+import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
-import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 
 describe("GrantInternetAccess", () => {
-  function createDailyPlan(): Plan {
-    return Plan.create({
+  it("grants access for a continuous plan", async () => {
+    const repository = new MemoryInternetAccessRepository();
+
+    const identifierGenerator = new UlidIdentifierGenerator();
+
+    const grantInternetAccess = new GrantInternetAccess(
+      repository,
+      identifierGenerator,
+    );
+
+    const plan = Plan.create({
       id: "daily",
       name: "Daily",
-      price: Money.fromMinorUnits(500),
+      price: Money.fromMinorUnits(5000),
 
       validity: Validity.create({
         amount: 1,
@@ -35,39 +43,27 @@ describe("GrantInternetAccess", () => {
       }),
 
       accessMethod: AccessMethod.WALL_CLOCK,
-
-      // Compatibility fields.
-      type: PlanType.TIME,
-      allowanceMinutes: 30,
     });
-  }
 
-  it("grants internet access using the plan validity", async () => {
-    const repository = new MemoryInternetAccessRepository();
-
-    const identifierGenerator = new UlidIdentifierGenerator();
-
-    const grantInternetAccess = new GrantInternetAccess(
-      repository,
-      identifierGenerator,
-    );
-
-    const grantedAt = new Date("2026-01-01T10:00:00Z");
+    const grantedAt = new Date("2026-08-01T10:00:00Z");
 
     const access = await grantInternetAccess.execute({
       purchaseId: "purchase-001",
       customerId: "customer-001",
-      plan: createDailyPlan(),
+      plan,
       grantedAt,
     });
 
+    expect(access.id).toBeDefined();
+    expect(access.purchaseId).toBe("purchase-001");
+    expect(access.customerId).toBe("customer-001");
     expect(access.grantedAt).toEqual(grantedAt);
 
-    expect(access.expiresAt).toEqual(new Date("2026-01-02T10:00:00Z"));
+    expect(access.expiresAt).toEqual(new Date("2026-08-02T10:00:00Z"));
 
-    const persisted = await repository.findByPurchaseId("purchase-001");
+    const stored = await repository.findByPurchaseId("purchase-001");
 
-    expect(persisted).not.toBeNull();
-    expect(persisted?.id).toBe(access.id);
+    expect(stored).not.toBeNull();
+    expect(stored?.id).toBe(access.id);
   });
 });

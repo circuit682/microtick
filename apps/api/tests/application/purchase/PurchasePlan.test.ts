@@ -1,28 +1,35 @@
 import { describe, expect, it } from "vitest";
 
-import { PurchasePlan } from "@application/purchase/PurchasePlan.js";
+import { InitiatePayment } from "@application/payment/InitiatePayment.js";
+import { CreatePlan } from "@application/plan/CreatePlan.js";
+import { PurchasePlan } from "@application/plan/PurchasePlan.js";
 
 import {
   AccessMethod,
   ConsumptionPolicy,
   Money,
-  Plan,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
 } from "@domain";
 
-import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
+import { ErrorCode, ValidationError } from "@shared";
 
-import { InMemoryPurchaseRepository } from "../../doubles/purchase/InMemoryPurchaseRepository.js";
+import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
+import { FakePaymentGateway } from "@infrastructure/payment/FakePaymentGateway.js";
+import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
+import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
 describe("PurchasePlan", () => {
-  function createPlan(): Plan {
-    return Plan.create({
-      id: "plan-001",
+  function createQuikyPlan(
+    repository: MemoryPlanRepository,
+    identifierGenerator: UlidIdentifierGenerator,
+  ) {
+    const createPlan = new CreatePlan(identifierGenerator, repository);
+
+    return createPlan.execute({
       name: "Quiky",
-      price: Money.fromMinorUnits(500),
+      price: 500,
 
       validity: Validity.create({
         amount: 30,
@@ -36,98 +43,183 @@ describe("PurchasePlan", () => {
       }),
 
       accessMethod: AccessMethod.SESSION,
-
-      // Temporary compatibility.
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
     });
   }
 
-  it("creates a purchase from a plan", async () => {
-    const repository = new InMemoryPurchaseRepository();
+  it("should request payment for an existing plan", async () => {
+    // Given
+    const paymentGateway = new FakePaymentGateway();
+
+    const paymentIntentRepository = new MemoryPaymentIntentRepository();
+
+    const initiatePayment = new InitiatePayment(
+      paymentGateway,
+      paymentIntentRepository,
+    );
+
+    const repository = new MemoryPlanRepository();
 
     const identifierGenerator = new UlidIdentifierGenerator();
 
-    const useCase = new PurchasePlan(repository, identifierGenerator);
+    const createdPlan = await createQuikyPlan(repository, identifierGenerator);
 
-    const plan = createPlan();
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
 
-    const purchase = await useCase.execute({
-      paymentIntentId: "payment-intent-001",
-      customerId: "customer-001",
-      plan,
+    // When
+    await purchasePlan.execute({
+      planId: createdPlan.id,
+      phoneNumber: "254712345678",
     });
 
-    expect(purchase.id).toBeDefined();
+    // Then
+    expect(paymentGateway.lastRequest).not.toBeNull();
 
-    expect(purchase.paymentIntentId).toBe("payment-intent-001");
+    expect(paymentGateway.lastRequest?.phoneNumber).toBe("254712345678");
 
-    expect(purchase.customerId).toBe("customer-001");
+    expect(
+      paymentGateway.lastRequest?.amount.equals(Money.fromMinorUnits(500)),
+    ).toBe(true);
 
-    expect(purchase.planId).toBe(plan.id);
+    expect(paymentGateway.lastRequest?.reference).toBeDefined();
 
-    expect(purchase.planName).toBe(plan.name);
+    expect(paymentGateway.lastRequest?.reference).not.toBe(createdPlan.id);
 
-    expect(purchase.planPrice.equals(plan.price)).toBe(true);
+    const stored = await paymentIntentRepository.findByReference(
+      paymentGateway.lastRequest!.reference,
+    );
 
-    expect(purchase.validity.equals(plan.validity)).toBe(true);
-
-    expect(purchase.consumptionPolicy).toBe(plan.consumptionPolicy);
-
-    expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
-
-    expect(purchase.accessMethod).toBe(plan.accessMethod);
+    expect(stored).not.toBeNull();
+    expect(stored?.planId).toBe(createdPlan.id);
   });
 
-  it("persists the purchase", async () => {
-    const repository = new InMemoryPurchaseRepository();
+  it("should reject purchasing an inactive plan", async () => {
+    // Given
+    const repository = new MemoryPlanRepository();
+
+    const paymentGateway = new FakePaymentGateway();
+
+    const paymentIntentRepository = new MemoryPaymentIntentRepository();
+
+    const initiatePayment = new InitiatePayment(
+      paymentGateway,
+      paymentIntentRepository,
+    );
 
     const identifierGenerator = new UlidIdentifierGenerator();
 
-    const useCase = new PurchasePlan(repository, identifierGenerator);
+    const createdPlan = await createQuikyPlan(repository, identifierGenerator);
 
-    const purchase = await useCase.execute({
-      paymentIntentId: "payment-intent-001",
-      customerId: "customer-001",
-      plan: createPlan(),
+    const inactivePlan = createdPlan.deactivate();
+
+    await repository.save(inactivePlan);
+
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
+
+    // When / Then
+    await expect(
+      purchasePlan.execute({
+        planId: createdPlan.id,
+        phoneNumber: "254712345678",
+      }),
+    ).rejects.toThrow(ValidationError);
+
+    await expect(
+      purchasePlan.execute({
+        planId: createdPlan.id,
+        phoneNumber: "254712345678",
+      }),
+    ).rejects.toMatchObject({
+      code: ErrorCode.PLAN_INACTIVE,
     });
-
-    const persisted = await repository.findById(purchase.id);
-
-    expect(persisted).not.toBeNull();
-
-    expect(persisted?.id).toBe(purchase.id);
-
-    expect(persisted?.paymentIntentId).toBe("payment-intent-001");
   });
 
-  it("stores an immutable snapshot of the purchased plan", async () => {
-    const repository = new InMemoryPurchaseRepository();
+  it("should reject purchasing a non-existent plan", async () => {
+    // Given
+    const repository = new MemoryPlanRepository();
+
+    const paymentGateway = new FakePaymentGateway();
+
+    const paymentIntentRepository = new MemoryPaymentIntentRepository();
+
+    const initiatePayment = new InitiatePayment(
+      paymentGateway,
+      paymentIntentRepository,
+    );
 
     const identifierGenerator = new UlidIdentifierGenerator();
 
-    const useCase = new PurchasePlan(repository, identifierGenerator);
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
 
-    const plan = createPlan();
+    // When / Then
+    await expect(
+      purchasePlan.execute({
+        planId: "missing-plan",
+        phoneNumber: "254712345678",
+      }),
+    ).rejects.toThrow(ValidationError);
 
-    const purchase = await useCase.execute({
-      paymentIntentId: "payment-intent-001",
-      customerId: "customer-001",
-      plan,
+    await expect(
+      purchasePlan.execute({
+        planId: "missing-plan",
+        phoneNumber: "254712345678",
+      }),
+    ).rejects.toMatchObject({
+      code: ErrorCode.PLAN_NOT_FOUND,
+    });
+  });
+
+  it("should return the purchase plan result", async () => {
+    // Given
+    const repository = new MemoryPlanRepository();
+
+    const paymentGateway = new FakePaymentGateway();
+
+    const paymentIntentRepository = new MemoryPaymentIntentRepository();
+
+    const initiatePayment = new InitiatePayment(
+      paymentGateway,
+      paymentIntentRepository,
+    );
+
+    const identifierGenerator = new UlidIdentifierGenerator();
+
+    const createdPlan = await createQuikyPlan(repository, identifierGenerator);
+
+    const purchasePlan = new PurchasePlan(
+      repository,
+      initiatePayment,
+      identifierGenerator,
+    );
+
+    // When
+    const result = await purchasePlan.execute({
+      planId: createdPlan.id,
+      phoneNumber: "254712345678",
     });
 
-    expect(purchase.planId).toBe(plan.id);
+    // Then
+    expect(result.paymentIntent).toBeDefined();
+    expect(result.providerRequestId).toBeDefined();
+    expect(result.checkoutUrl).toBeDefined();
 
-    expect(purchase.planName).toBe(plan.name);
+    const stored = await paymentIntentRepository.findByReference(
+      result.paymentIntent.reference,
+    );
 
-    expect(purchase.planPrice.equals(plan.price)).toBe(true);
+    expect(stored).not.toBeNull();
 
-    expect(purchase.validity.equals(plan.validity)).toBe(true);
-
-    expect(purchase.consumptionPolicy).toBe(plan.consumptionPolicy);
-
-    expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
-
-    expect(purchase.accessMethod).toBe(plan.accessMethod);
+    expect(stored?.id).toBe(result.paymentIntent.id);
   });
 });

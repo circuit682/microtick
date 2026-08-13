@@ -13,6 +13,11 @@ import {
 
 export class PlanMapper {
   static toDomain(plan: PrismaPlan): Plan {
+    const consumptionPolicy =
+      plan.type === PlanType.TIME
+        ? ConsumptionPolicy.CONTINUOUS
+        : ConsumptionPolicy.USAGE;
+
     return Plan.reconstitute({
       id: plan.id,
 
@@ -25,23 +30,16 @@ export class PlanMapper {
         unit: ValidityUnit.MINUTES,
       }),
 
-      consumptionPolicy:
-        plan.type === PlanType.TIME
-          ? ConsumptionPolicy.CONTINUOUS
-          : ConsumptionPolicy.USAGE,
+      consumptionPolicy,
 
       serviceLevel: ServiceLevel.create({
         name: "Residential",
       }),
 
       accessMethod:
-        plan.type === PlanType.TIME
+        consumptionPolicy === ConsumptionPolicy.CONTINUOUS
           ? AccessMethod.WALL_CLOCK
           : AccessMethod.SESSION,
-
-      // Temporary compatibility.
-      type: plan.type as PlanType,
-      allowanceMinutes: plan.allowanceMinutes,
 
       active: plan.active,
     });
@@ -62,9 +60,13 @@ export class PlanMapper {
 
       priceMinor: plan.price.minorUnits,
 
-      // Compatibility until schema migration.
-      type: plan.type,
-      allowanceMinutes: plan.allowanceMinutes,
+      // Compatibility with the current Prisma schema.
+      type:
+        plan.consumptionPolicy === ConsumptionPolicy.CONTINUOUS
+          ? PlanType.TIME
+          : PlanType.USAGE,
+
+      allowanceMinutes: plan.validity.toMinutes(),
 
       active: plan.active,
     };

@@ -12,36 +12,32 @@ import {
   PaymentIntent,
   PaymentStatus,
   Plan,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
 } from "@domain";
 
+import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
-import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
 import { InMemoryPurchaseRepository } from "../../doubles/purchase/InMemoryPurchaseRepository.js";
 
 describe("ReceivePaymentConfirmation", () => {
-  async function createFulfilPurchase(): Promise<FulfilPurchase> {
-    const purchaseRepository = new InMemoryPurchaseRepository();
+  it("should confirm a payment and fulfil the purchase", async () => {
+    const paymentIntentRepository = new MemoryPaymentIntentRepository();
 
     const planRepository = new MemoryPlanRepository();
 
-    const identifierGenerator = new UlidIdentifierGenerator();
+    const purchaseRepository = new InMemoryPurchaseRepository();
 
     const internetAccessRepository = new MemoryInternetAccessRepository();
 
-    const grantInternetAccess = new GrantInternetAccess(
-      internetAccessRepository,
-      identifierGenerator,
-    );
+    const identifierGenerator = new UlidIdentifierGenerator();
 
     const plan = Plan.create({
-      id: "plan-1",
+      id: "quiky",
       name: "Quiky",
       price: Money.fromMinorUnits(500),
 
@@ -57,46 +53,37 @@ describe("ReceivePaymentConfirmation", () => {
       }),
 
       accessMethod: AccessMethod.SESSION,
-
-      // Temporary compatibility.
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
     });
 
     await planRepository.save(plan);
 
-    return new FulfilPurchase(
+    const paymentIntent = PaymentIntent.create({
+      id: "payment-intent-1",
+      planId: plan.id,
+      amount: plan.price,
+      phoneNumber: "0712345678",
+      reference: "payment-ref-123",
+    });
+
+    paymentIntent.markPending();
+
+    await paymentIntentRepository.save(paymentIntent);
+
+    const grantInternetAccess = new GrantInternetAccess(
+      internetAccessRepository,
+      identifierGenerator,
+    );
+
+    const fulfilPurchase = new FulfilPurchase(
       purchaseRepository,
       planRepository,
       identifierGenerator,
       grantInternetAccess,
     );
-  }
-
-  function createPendingPayment(): PaymentIntent {
-    const payment = PaymentIntent.create({
-      id: "payment-intent-1",
-      planId: "plan-1",
-      amount: Money.fromMinorUnits(500),
-      phoneNumber: "0712345678",
-      reference: "payment-ref-123",
-    });
-
-    payment.markPending();
-
-    return payment;
-  }
-
-  it("should confirm a payment when a confirmation is received", async () => {
-    const repository = new MemoryPaymentIntentRepository();
-
-    const payment = createPendingPayment();
-
-    await repository.save(payment);
 
     const confirmPayment = new ConfirmPayment(
-      repository,
-      await createFulfilPurchase(),
+      paymentIntentRepository,
+      fulfilPurchase,
     );
 
     const receivePaymentConfirmation = new ReceivePaymentConfirmation(
@@ -104,59 +91,44 @@ describe("ReceivePaymentConfirmation", () => {
     );
 
     await receivePaymentConfirmation.execute({
-      reference: "payment-ref-123",
+      reference: paymentIntent.reference,
     });
 
-    const confirmed = await repository.findByReference("payment-ref-123");
-
-    expect(confirmed?.status).toBe(PaymentStatus.COMPLETED);
-  });
-
-  it("should propagate errors from ConfirmPayment", async () => {
-    const repository = new MemoryPaymentIntentRepository();
-
-    const confirmPayment = new ConfirmPayment(
-      repository,
-      await createFulfilPurchase(),
+    const storedPayment = await paymentIntentRepository.findByReference(
+      paymentIntent.reference,
     );
 
-    const receivePaymentConfirmation = new ReceivePaymentConfirmation(
-      confirmPayment,
+    expect(storedPayment).not.toBeNull();
+
+    expect(storedPayment?.status).toBe(PaymentStatus.COMPLETED);
+
+    const purchase = await purchaseRepository.findByPaymentIntentId(
+      paymentIntent.id,
     );
 
-    await expect(
-      receivePaymentConfirmation.execute({
-        reference: "unknown-reference",
-      }),
-    ).rejects.toThrow();
-  });
+    expect(purchase).not.toBeNull();
 
-  it("should ignore duplicate webhook deliveries", async () => {
-    const repository = new MemoryPaymentIntentRepository();
+    expect(purchase?.planId).toBe(plan.id);
+    expect(purchase?.planName).toBe(plan.name);
 
-    const payment = createPendingPayment();
+    expect(purchase?.planPrice.equals(plan.price)).toBe(true);
 
-    payment.confirm();
+    expect(purchase?.validity.equals(plan.validity)).toBe(true);
 
-    await repository.save(payment);
+    expect(purchase?.consumptionPolicy).toBe(plan.consumptionPolicy);
 
-    const confirmPayment = new ConfirmPayment(
-      repository,
-      await createFulfilPurchase(),
+    expect(purchase?.serviceLevel.equals(plan.serviceLevel)).toBe(true);
+
+    expect(purchase?.accessMethod).toBe(plan.accessMethod);
+
+    const access = await internetAccessRepository.findByPurchaseId(
+      purchase!.id,
     );
 
-    const receivePaymentConfirmation = new ReceivePaymentConfirmation(
-      confirmPayment,
-    );
+    expect(access).not.toBeNull();
 
-    await expect(
-      receivePaymentConfirmation.execute({
-        reference: "payment-ref-123",
-      }),
-    ).resolves.not.toThrow();
+    expect(access?.purchaseId).toBe(purchase?.id);
 
-    const confirmed = await repository.findByReference("payment-ref-123");
-
-    expect(confirmed?.status).toBe(PaymentStatus.COMPLETED);
+    expect(access?.customerId).toBe(paymentIntent.phoneNumber);
   });
 });

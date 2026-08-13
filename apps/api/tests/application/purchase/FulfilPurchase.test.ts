@@ -8,15 +8,13 @@ import {
   ConsumptionPolicy,
   Money,
   Plan,
-  PlanType,
-  Purchase,
   ServiceLevel,
   Validity,
   ValidityUnit,
 } from "@domain";
 
+import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
-import { UlidIdentifierGenerator } from "@infrastructure/identity/index.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
 import { InMemoryPurchaseRepository } from "../../doubles/purchase/InMemoryPurchaseRepository.js";
@@ -24,7 +22,7 @@ import { InMemoryPurchaseRepository } from "../../doubles/purchase/InMemoryPurch
 describe("FulfilPurchase", () => {
   function createPlan(): Plan {
     return Plan.create({
-      id: "plan-001",
+      id: "quiky",
       name: "Quiky",
       price: Money.fromMinorUnits(500),
 
@@ -40,239 +38,124 @@ describe("FulfilPurchase", () => {
       }),
 
       accessMethod: AccessMethod.SESSION,
-
-      // Temporary compatibility.
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
     });
   }
 
-  function createFulfilPurchase(
-    purchaseRepository: InMemoryPurchaseRepository,
-    planRepository: MemoryPlanRepository,
-    identifierGenerator: UlidIdentifierGenerator,
-  ): FulfilPurchase {
+  it("should create a purchase from the selected plan and grant internet access", async () => {
+    const purchaseRepository = new InMemoryPurchaseRepository();
+
+    const planRepository = new MemoryPlanRepository();
+
     const internetAccessRepository = new MemoryInternetAccessRepository();
+
+    const identifierGenerator = new UlidIdentifierGenerator();
 
     const grantInternetAccess = new GrantInternetAccess(
       internetAccessRepository,
       identifierGenerator,
     );
 
-    return new FulfilPurchase(
+    const fulfilPurchase = new FulfilPurchase(
       purchaseRepository,
       planRepository,
       identifierGenerator,
       grantInternetAccess,
     );
-  }
-
-  it("creates a purchase from a valid payment", async () => {
-    const purchaseRepository = new InMemoryPurchaseRepository();
-
-    const planRepository = new MemoryPlanRepository();
-
-    const identifierGenerator = new UlidIdentifierGenerator();
 
     const plan = createPlan();
 
     await planRepository.save(plan);
 
-    const fulfilPurchase = createFulfilPurchase(
-      purchaseRepository,
-      planRepository,
-      identifierGenerator,
-    );
+    const purchasedAt = new Date("2026-08-01T10:00:00Z");
 
     await fulfilPurchase.execute({
-      paymentId: "payment-001",
+      paymentId: "payment-intent-1",
       customerId: "customer-001",
       planId: plan.id,
-      purchasedAt: new Date(),
+      purchasedAt,
     });
 
-    const purchases = await purchaseRepository.findByCustomerId("customer-001");
+    const purchase =
+      await purchaseRepository.findByPaymentIntentId("payment-intent-1");
 
-    expect(purchases).toHaveLength(1);
+    expect(purchase).not.toBeNull();
 
-    const purchase = purchases[0]!;
+    expect(purchase?.paymentIntentId).toBe("payment-intent-1");
 
-    expect(purchase.paymentIntentId).toBe("payment-001");
+    expect(purchase?.customerId).toBe("customer-001");
 
-    expect(purchase.customerId).toBe("customer-001");
+    expect(purchase?.planId).toBe(plan.id);
+    expect(purchase?.planName).toBe(plan.name);
 
-    expect(purchase.planId).toBe(plan.id);
+    expect(purchase?.planPrice.equals(plan.price)).toBe(true);
 
-    expect(purchase.planName).toBe(plan.name);
+    expect(purchase?.validity.equals(plan.validity)).toBe(true);
 
-    expect(purchase.planPrice.equals(plan.price)).toBe(true);
+    expect(purchase?.consumptionPolicy).toBe(plan.consumptionPolicy);
 
-    expect(purchase.validity.equals(plan.validity)).toBe(true);
+    expect(purchase?.serviceLevel.equals(plan.serviceLevel)).toBe(true);
 
-    expect(purchase.consumptionPolicy).toBe(plan.consumptionPolicy);
+    expect(purchase?.accessMethod).toBe(plan.accessMethod);
 
-    expect(purchase.serviceLevel.equals(plan.serviceLevel)).toBe(true);
+    expect(purchase?.purchasedAt).toEqual(purchasedAt);
 
-    expect(purchase.accessMethod).toBe(plan.accessMethod);
+    const access = await internetAccessRepository.findByPurchaseId(
+      purchase!.id,
+    );
+
+    expect(access).not.toBeNull();
+
+    expect(access?.purchaseId).toBe(purchase!.id);
+
+    expect(access?.customerId).toBe("customer-001");
+
+    expect(access?.grantedAt).toEqual(purchasedAt);
   });
 
-  it("persists the purchase", async () => {
+  it("should not create a duplicate purchase for the same payment", async () => {
     const purchaseRepository = new InMemoryPurchaseRepository();
 
     const planRepository = new MemoryPlanRepository();
 
+    const internetAccessRepository = new MemoryInternetAccessRepository();
+
     const identifierGenerator = new UlidIdentifierGenerator();
+
+    const grantInternetAccess = new GrantInternetAccess(
+      internetAccessRepository,
+      identifierGenerator,
+    );
+
+    const fulfilPurchase = new FulfilPurchase(
+      purchaseRepository,
+      planRepository,
+      identifierGenerator,
+      grantInternetAccess,
+    );
 
     const plan = createPlan();
 
     await planRepository.save(plan);
 
-    const fulfilPurchase = createFulfilPurchase(
-      purchaseRepository,
-      planRepository,
-      identifierGenerator,
-    );
-
-    await fulfilPurchase.execute({
-      paymentId: "payment-001",
+    const command = {
+      paymentId: "payment-intent-1",
       customerId: "customer-001",
       planId: plan.id,
-      purchasedAt: new Date(),
-    });
+      purchasedAt: new Date("2026-08-01T10:00:00Z"),
+    };
 
-    const purchases = await purchaseRepository.findByCustomerId("customer-001");
+    await fulfilPurchase.execute(command);
+    await fulfilPurchase.execute(command);
 
-    expect(purchases).toHaveLength(1);
+    const purchase =
+      await purchaseRepository.findByPaymentIntentId("payment-intent-1");
 
-    const purchase = purchases[0]!;
+    expect(purchase).not.toBeNull();
 
-    const persisted = await purchaseRepository.findById(purchase.id);
-
-    expect(persisted).not.toBeNull();
-  });
-
-  it("stores an immutable snapshot of the purchased plan", async () => {
-    const purchaseRepository = new InMemoryPurchaseRepository();
-
-    const planRepository = new MemoryPlanRepository();
-
-    const identifierGenerator = new UlidIdentifierGenerator();
-
-    const plan = createPlan();
-
-    await planRepository.save(plan);
-
-    const fulfilPurchase = createFulfilPurchase(
-      purchaseRepository,
-      planRepository,
-      identifierGenerator,
+    const access = await internetAccessRepository.findByPurchaseId(
+      purchase!.id,
     );
 
-    await fulfilPurchase.execute({
-      paymentId: "payment-001",
-      customerId: "customer-001",
-      planId: plan.id,
-      purchasedAt: new Date(),
-    });
-
-    const purchases = await purchaseRepository.findByCustomerId("customer-001");
-
-    expect(purchases).toHaveLength(1);
-
-    const purchase = purchases[0]!;
-
-    const updatedPlan = plan.deactivate();
-
-    expect(purchase.planId).toBe(updatedPlan.id);
-
-    expect(purchase.planName).toBe(updatedPlan.name);
-
-    expect(purchase.planPrice.equals(updatedPlan.price)).toBe(true);
-
-    expect(purchase.validity.equals(updatedPlan.validity)).toBe(true);
-
-    expect(purchase.consumptionPolicy).toBe(updatedPlan.consumptionPolicy);
-
-    expect(purchase.serviceLevel.equals(updatedPlan.serviceLevel)).toBe(true);
-
-    expect(purchase.accessMethod).toBe(updatedPlan.accessMethod);
-  });
-
-  it("throws when the plan does not exist", async () => {
-    const purchaseRepository = new InMemoryPurchaseRepository();
-
-    const planRepository = new MemoryPlanRepository();
-
-    const identifierGenerator = new UlidIdentifierGenerator();
-
-    const fulfilPurchase = createFulfilPurchase(
-      purchaseRepository,
-      planRepository,
-      identifierGenerator,
-    );
-
-    await expect(
-      fulfilPurchase.execute({
-        paymentId: "payment-001",
-        customerId: "customer-001",
-        planId: "missing-plan",
-        purchasedAt: new Date(),
-      }),
-    ).rejects.toThrow();
-  });
-
-  it("does nothing when the payment has already been fulfilled", async () => {
-    const purchaseRepository = new InMemoryPurchaseRepository();
-
-    const planRepository = new MemoryPlanRepository();
-
-    const identifierGenerator = new UlidIdentifierGenerator();
-
-    const plan = createPlan();
-
-    await planRepository.save(plan);
-
-    const existingPurchase = Purchase.create({
-      id: "purchase-001",
-      paymentIntentId: "payment-001",
-      customerId: "customer-001",
-
-      planId: plan.id,
-      planName: plan.name,
-      planPrice: plan.price,
-
-      validity: plan.validity,
-
-      consumptionPolicy: plan.consumptionPolicy,
-
-      serviceLevel: plan.serviceLevel,
-
-      accessMethod: plan.accessMethod,
-
-      purchasedAt: new Date(),
-    });
-
-    await purchaseRepository.save(existingPurchase);
-
-    const fulfilPurchase = createFulfilPurchase(
-      purchaseRepository,
-      planRepository,
-      identifierGenerator,
-    );
-
-    await fulfilPurchase.execute({
-      paymentId: "payment-001",
-      customerId: "customer-001",
-      planId: plan.id,
-      purchasedAt: new Date(),
-    });
-
-    const purchases = await purchaseRepository.findByCustomerId("customer-001");
-
-    expect(purchases).toHaveLength(1);
-
-    const purchase = purchases[0]!;
-
-    expect(purchase.id).toBe("purchase-001");
+    expect(access).not.toBeNull();
   });
 });

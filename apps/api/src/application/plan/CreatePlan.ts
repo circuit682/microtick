@@ -3,7 +3,6 @@ import {
   ConsumptionPolicy,
   Money,
   Plan,
-  PlanType,
   ServiceLevel,
   Validity,
 } from "@domain";
@@ -20,13 +19,6 @@ export interface CreatePlanCommand {
   consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
-
-  //
-  // Temporary compatibility until the
-  // persistence layer no longer requires it.
-  //
-  type: PlanType;
-  allowanceMinutes: number;
 }
 
 export class CreatePlan {
@@ -50,12 +42,6 @@ export class CreatePlan {
       serviceLevel: command.serviceLevel,
 
       accessMethod: command.accessMethod,
-
-      //
-      // Temporary compatibility.
-      //
-      type: command.type,
-      allowanceMinutes: command.allowanceMinutes,
     });
 
     await this.planRepository.save(plan);

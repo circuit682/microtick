@@ -5,7 +5,6 @@ import {
   ConsumptionPolicy,
   Money,
   Plan,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
@@ -19,8 +18,8 @@ describe("MemoryPlanRepository", () => {
     const repository = new MemoryPlanRepository();
 
     const plan = Plan.create({
-      id: "starter-30",
-      name: "Starter",
+      id: "quiky-30",
+      name: "Quiky",
       price: Money.fromMinorUnits(500),
 
       validity: Validity.create({
@@ -35,16 +34,12 @@ describe("MemoryPlanRepository", () => {
       }),
 
       accessMethod: AccessMethod.SESSION,
-
-      // Temporary compatibility.
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
     });
 
     // When
     await repository.save(plan);
 
-    const stored = await repository.findById("starter-30");
+    const stored = await repository.findById("quiky-30");
 
     // Then
     expect(stored).not.toBeNull();

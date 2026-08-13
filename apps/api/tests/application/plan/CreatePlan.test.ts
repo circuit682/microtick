@@ -7,7 +7,6 @@ import {
   ConsumptionPolicy,
   Money,
   Plan,
-  PlanType,
   ServiceLevel,
   Validity,
   ValidityUnit,
@@ -24,14 +23,12 @@ describe("CreatePlan", () => {
   }
 
   it("should create a valid usage plan", async () => {
-    // Given
     const repository = new MemoryPlanRepository();
 
     const identifierGenerator = new UlidIdentifierGenerator();
 
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
-    // When
     const plan = await createPlan.execute({
       name: "Quiky",
       price: 500,
@@ -46,13 +43,8 @@ describe("CreatePlan", () => {
       serviceLevel: residentialService(),
 
       accessMethod: AccessMethod.SESSION,
-
-      // Temporary compatibility.
-      type: PlanType.USAGE,
-      allowanceMinutes: 30,
     });
 
-    // Then
     expect(plan).toBeInstanceOf(Plan);
 
     expect(plan.id).toBeDefined();
@@ -77,29 +69,23 @@ describe("CreatePlan", () => {
 
     expect(plan.accessMethod).toBe(AccessMethod.SESSION);
 
-    // Temporary compatibility.
-    expect(plan.type).toBe(PlanType.USAGE);
-    expect(plan.allowanceMinutes).toBe(30);
-
     expect(plan.active).toBe(true);
   });
 
-  it("should create a valid time plan", async () => {
-    // Given
+  it("should create a valid continuous plan", async () => {
     const repository = new MemoryPlanRepository();
 
     const identifierGenerator = new UlidIdentifierGenerator();
 
     const createPlan = new CreatePlan(identifierGenerator, repository);
 
-    // When
     const plan = await createPlan.execute({
       name: "Daily",
       price: 5000,
 
       validity: Validity.create({
-        amount: 1,
-        unit: ValidityUnit.DAYS,
+        amount: 24,
+        unit: ValidityUnit.HOURS,
       }),
 
       consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
@@ -107,18 +93,19 @@ describe("CreatePlan", () => {
       serviceLevel: residentialService(),
 
       accessMethod: AccessMethod.WALL_CLOCK,
-
-      // Temporary compatibility.
-      type: PlanType.TIME,
-      allowanceMinutes: 1440,
     });
 
-    // Then
+    expect(plan).toBeInstanceOf(Plan);
+
+    expect(plan.name).toBe("Daily");
+
+    expect(plan.price.equals(Money.fromMinorUnits(5000))).toBe(true);
+
     expect(
       plan.validity.equals(
         Validity.create({
-          amount: 1,
-          unit: ValidityUnit.DAYS,
+          amount: 24,
+          unit: ValidityUnit.HOURS,
         }),
       ),
     ).toBe(true);
@@ -129,8 +116,6 @@ describe("CreatePlan", () => {
 
     expect(plan.accessMethod).toBe(AccessMethod.WALL_CLOCK);
 
-    // Temporary compatibility.
-    expect(plan.type).toBe(PlanType.TIME);
-    expect(plan.allowanceMinutes).toBe(1440);
+    expect(plan.active).toBe(true);
   });
 });
