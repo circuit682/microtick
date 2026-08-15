@@ -1,8 +1,11 @@
 import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import type { PlanRepository } from "@application/plan/PlanRepository.js";
+import type { CredentialGenerator } from "@application/ports/CredentialGenerator.js";
+import type { NetworkIdentityRepository } from "@application/ports/NetworkIdentityRepository.js";
 import type { PurchaseRepository } from "@application/ports/PurchaseRepository.js";
+import type { UsernameGenerator } from "@application/ports/UsernameGenerator.js";
 
-import { Purchase } from "@domain";
+import { AuthenticationMethod, NetworkIdentity, Purchase } from "@domain";
 
 import type { IdentifierGenerator } from "@shared";
 
@@ -22,6 +25,9 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
     private readonly purchaseRepository: PurchaseRepository,
     private readonly planRepository: PlanRepository,
     private readonly identifierGenerator: IdentifierGenerator,
+    private readonly networkIdentityRepository: NetworkIdentityRepository,
+    private readonly usernameGenerator: UsernameGenerator,
+    private readonly credentialGenerator: CredentialGenerator,
     private readonly grantInternetAccess: GrantInternetAccess,
   ) {}
 
@@ -62,6 +68,16 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
     });
 
     await this.purchaseRepository.save(purchase);
+
+    const networkIdentity = NetworkIdentity.create({
+      id: this.identifierGenerator.generate(),
+      customerId: purchase.customerId,
+      username: this.usernameGenerator.generate(),
+      credential: this.credentialGenerator.generate(),
+      authenticationMethod: AuthenticationMethod.HOTSPOT,
+    });
+
+    await this.networkIdentityRepository.save(networkIdentity);
 
     await this.grantInternetAccess.execute({
       purchaseId: purchase.id,

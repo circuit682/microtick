@@ -3,11 +3,16 @@ import { describe, expect, it } from "vitest";
 import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import { ConfirmPayment } from "@application/payment/ConfirmPayment.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
+import type { NetworkIdentityRepository } from "@application/ports/NetworkIdentityRepository.js";
+import type { UsernameGenerator } from "@application/ports/UsernameGenerator.js";
+import type { CredentialGenerator } from "@application/ports/CredentialGenerator.js";
 
 import {
   AccessMethod,
+  AuthenticationMethod,
   ConsumptionPolicy,
   Money,
+  NetworkIdentity,
   PaymentIntent,
   PaymentStatus,
   Plan,
@@ -33,7 +38,41 @@ describe("ConfirmPayment", () => {
 
     const internetAccessRepository = new MemoryInternetAccessRepository();
 
+    const networkIdentities: NetworkIdentity[] = [];
+
+    const networkIdentityRepository: NetworkIdentityRepository = {
+      async save(identity) {
+        networkIdentities.push(identity);
+      },
+
+      async findById(id) {
+        return networkIdentities.find((identity) => identity.id === id) ?? null;
+      },
+
+      async findByUsername(username) {
+        return (
+          networkIdentities.find(
+            (identity) => identity.username === username,
+          ) ?? null
+        );
+      },
+
+      async findByCustomerId(customerId) {
+        return networkIdentities.filter(
+          (identity) => identity.customerId === customerId,
+        );
+      },
+    };
+
     const identifierGenerator = new UlidIdentifierGenerator();
+
+    const usernameGenerator: UsernameGenerator = {
+      generate: () => "mt_test_customer_1",
+    };
+
+    const credentialGenerator: CredentialGenerator = {
+      generate: () => "TestCredential123!",
+    };
 
     const plan = Plan.create({
       id: "quiky",
@@ -77,6 +116,9 @@ describe("ConfirmPayment", () => {
       purchaseRepository,
       planRepository,
       identifierGenerator,
+      networkIdentityRepository,
+      usernameGenerator,
+      credentialGenerator,
       grantInternetAccess,
     );
 
@@ -92,7 +134,6 @@ describe("ConfirmPayment", () => {
     );
 
     expect(storedPayment).not.toBeNull();
-
     expect(storedPayment?.status).toBe(PaymentStatus.COMPLETED);
 
     const purchase = await purchaseRepository.findByPaymentIntentId(
@@ -103,25 +144,27 @@ describe("ConfirmPayment", () => {
 
     expect(purchase?.planId).toBe(plan.id);
     expect(purchase?.planName).toBe(plan.name);
-
     expect(purchase?.planPrice.equals(plan.price)).toBe(true);
-
     expect(purchase?.validity.equals(plan.validity)).toBe(true);
-
     expect(purchase?.consumptionPolicy).toBe(plan.consumptionPolicy);
-
     expect(purchase?.serviceLevel.equals(plan.serviceLevel)).toBe(true);
-
     expect(purchase?.accessMethod).toBe(plan.accessMethod);
+
+    const identity = networkIdentities.find(
+      (item) => item.customerId === paymentIntent.phoneNumber,
+    );
+
+    expect(identity).not.toBeUndefined();
+    expect(identity?.username).toBe("mt_test_customer_1");
+    expect(identity?.credential).toBe("TestCredential123!");
+    expect(identity?.authenticationMethod).toBe(AuthenticationMethod.HOTSPOT);
 
     const access = await internetAccessRepository.findByPurchaseId(
       purchase!.id,
     );
 
     expect(access).not.toBeNull();
-
     expect(access?.purchaseId).toBe(purchase?.id);
-
     expect(access?.customerId).toBe(paymentIntent.phoneNumber);
   });
 });

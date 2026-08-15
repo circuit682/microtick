@@ -7,3 +7,5 @@ export * from "./purchase/index.js";
 export * from "./ServiceLevel/index.js";
 export * from "./Validity/index.js";
 export * from "./ConsumptionPolicy/index.js";
+export * from "./NetworkProfile/index.js";
+export * from "./NetworkIdentity/index.js";

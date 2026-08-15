@@ -95,3 +95,20 @@ model InternetAccess {
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 }
+
+enum AuthenticationMethod {
+  HOTSPOT
+}
+
+model NetworkIdentity {
+  id                   String              @id
+  customerId           String
+  username             String              @unique
+  encryptedCredential  String
+  authenticationMethod AuthenticationMethod
+
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([customerId])
+}

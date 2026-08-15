@@ -3,18 +3,24 @@ import { describe, expect, it } from "vitest";
 import { GrantInternetAccess } from "@application/access/GrantInternetAccess.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
+import type { CredentialGenerator } from "@application/ports/CredentialGenerator.js";
+import type { NetworkIdentityRepository } from "@application/ports/NetworkIdentityRepository.js";
+import type { UsernameGenerator } from "@application/ports/UsernameGenerator.js";
+
 import {
   AccessMethod,
+  AuthenticationMethod,
   ConsumptionPolicy,
   Money,
+  NetworkIdentity,
   Plan,
   ServiceLevel,
   Validity,
   ValidityUnit,
 } from "@domain";
 
-import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
+import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
 import { InMemoryPurchaseRepository } from "../../doubles/purchase/InMemoryPurchaseRepository.js";
@@ -41,7 +47,41 @@ describe("FulfilPurchase", () => {
     });
   }
 
-  it("should create a purchase from the selected plan and grant internet access", async () => {
+  function createNetworkIdentityRepository(): {
+    repository: NetworkIdentityRepository;
+    identities: NetworkIdentity[];
+  } {
+    const identities: NetworkIdentity[] = [];
+
+    const repository: NetworkIdentityRepository = {
+      async save(identity) {
+        identities.push(identity);
+      },
+
+      async findById(id) {
+        return identities.find((identity) => identity.id === id) ?? null;
+      },
+
+      async findByUsername(username) {
+        return (
+          identities.find((identity) => identity.username === username) ?? null
+        );
+      },
+
+      async findByCustomerId(customerId) {
+        return identities.filter(
+          (identity) => identity.customerId === customerId,
+        );
+      },
+    };
+
+    return {
+      repository,
+      identities,
+    };
+  }
+
+  function createFulfilPurchase() {
     const purchaseRepository = new InMemoryPurchaseRepository();
 
     const planRepository = new MemoryPlanRepository();
@@ -49,6 +89,17 @@ describe("FulfilPurchase", () => {
     const internetAccessRepository = new MemoryInternetAccessRepository();
 
     const identifierGenerator = new UlidIdentifierGenerator();
+
+    const { repository: networkIdentityRepository, identities } =
+      createNetworkIdentityRepository();
+
+    const usernameGenerator: UsernameGenerator = {
+      generate: () => "mt_test_customer_001",
+    };
+
+    const credentialGenerator: CredentialGenerator = {
+      generate: () => "TestCredential123!",
+    };
 
     const grantInternetAccess = new GrantInternetAccess(
       internetAccessRepository,
@@ -59,8 +110,29 @@ describe("FulfilPurchase", () => {
       purchaseRepository,
       planRepository,
       identifierGenerator,
+      networkIdentityRepository,
+      usernameGenerator,
+      credentialGenerator,
       grantInternetAccess,
     );
+
+    return {
+      purchaseRepository,
+      planRepository,
+      internetAccessRepository,
+      identities,
+      fulfilPurchase,
+    };
+  }
+
+  it("should create a purchase, create a network identity and grant internet access", async () => {
+    const {
+      purchaseRepository,
+      planRepository,
+      internetAccessRepository,
+      identities,
+      fulfilPurchase,
+    } = createFulfilPurchase();
 
     const plan = createPlan();
 
@@ -99,6 +171,16 @@ describe("FulfilPurchase", () => {
 
     expect(purchase?.purchasedAt).toEqual(purchasedAt);
 
+    expect(identities).toHaveLength(1);
+
+    const identity = identities[0];
+
+    expect(identity).toBeDefined();
+    expect(identity?.customerId).toBe("customer-001");
+    expect(identity?.username).toBe("mt_test_customer_001");
+    expect(identity?.credential).toBe("TestCredential123!");
+    expect(identity?.authenticationMethod).toBe(AuthenticationMethod.HOTSPOT);
+
     const access = await internetAccessRepository.findByPurchaseId(
       purchase!.id,
     );
@@ -112,26 +194,14 @@ describe("FulfilPurchase", () => {
     expect(access?.grantedAt).toEqual(purchasedAt);
   });
 
-  it("should not create a duplicate purchase for the same payment", async () => {
-    const purchaseRepository = new InMemoryPurchaseRepository();
-
-    const planRepository = new MemoryPlanRepository();
-
-    const internetAccessRepository = new MemoryInternetAccessRepository();
-
-    const identifierGenerator = new UlidIdentifierGenerator();
-
-    const grantInternetAccess = new GrantInternetAccess(
-      internetAccessRepository,
-      identifierGenerator,
-    );
-
-    const fulfilPurchase = new FulfilPurchase(
+  it("should not create a duplicate purchase or network identity for the same payment", async () => {
+    const {
       purchaseRepository,
       planRepository,
-      identifierGenerator,
-      grantInternetAccess,
-    );
+      internetAccessRepository,
+      identities,
+      fulfilPurchase,
+    } = createFulfilPurchase();
 
     const plan = createPlan();
 
@@ -157,5 +227,7 @@ describe("FulfilPurchase", () => {
     );
 
     expect(access).not.toBeNull();
+
+    expect(identities).toHaveLength(1);
   });
 });

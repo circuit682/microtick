@@ -5,10 +5,16 @@ import { ConfirmPayment } from "@application/payment/ConfirmPayment.js";
 import { ReceivePaymentConfirmation } from "@application/payment/ReceivePaymentConfirmation.js";
 import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 
+import type { CredentialGenerator } from "@application/ports/CredentialGenerator.js";
+import type { NetworkIdentityRepository } from "@application/ports/NetworkIdentityRepository.js";
+import type { UsernameGenerator } from "@application/ports/UsernameGenerator.js";
+
 import {
   AccessMethod,
+  AuthenticationMethod,
   ConsumptionPolicy,
   Money,
+  NetworkIdentity,
   PaymentIntent,
   PaymentStatus,
   Plan,
@@ -17,8 +23,8 @@ import {
   ValidityUnit,
 } from "@domain";
 
-import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryInternetAccessRepository } from "@infrastructure/access/MemoryInternetAccessRepository.js";
+import { UlidIdentifierGenerator } from "@infrastructure/identity/UlidIdentifierGenerator.js";
 import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPaymentIntentRepository.js";
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
@@ -35,6 +41,40 @@ describe("ReceivePaymentConfirmation", () => {
     const internetAccessRepository = new MemoryInternetAccessRepository();
 
     const identifierGenerator = new UlidIdentifierGenerator();
+
+    const networkIdentities: NetworkIdentity[] = [];
+
+    const networkIdentityRepository: NetworkIdentityRepository = {
+      async save(identity) {
+        networkIdentities.push(identity);
+      },
+
+      async findById(id) {
+        return networkIdentities.find((identity) => identity.id === id) ?? null;
+      },
+
+      async findByUsername(username) {
+        return (
+          networkIdentities.find(
+            (identity) => identity.username === username,
+          ) ?? null
+        );
+      },
+
+      async findByCustomerId(customerId) {
+        return networkIdentities.filter(
+          (identity) => identity.customerId === customerId,
+        );
+      },
+    };
+
+    const usernameGenerator: UsernameGenerator = {
+      generate: () => "mt_test_customer_1",
+    };
+
+    const credentialGenerator: CredentialGenerator = {
+      generate: () => "TestCredential123!",
+    };
 
     const plan = Plan.create({
       id: "quiky",
@@ -78,6 +118,9 @@ describe("ReceivePaymentConfirmation", () => {
       purchaseRepository,
       planRepository,
       identifierGenerator,
+      networkIdentityRepository,
+      usernameGenerator,
+      credentialGenerator,
       grantInternetAccess,
     );
 
@@ -120,6 +163,15 @@ describe("ReceivePaymentConfirmation", () => {
     expect(purchase?.serviceLevel.equals(plan.serviceLevel)).toBe(true);
 
     expect(purchase?.accessMethod).toBe(plan.accessMethod);
+
+    const identity = networkIdentities.find(
+      (item) => item.customerId === paymentIntent.phoneNumber,
+    );
+
+    expect(identity).not.toBeUndefined();
+    expect(identity?.username).toBe("mt_test_customer_1");
+    expect(identity?.credential).toBe("TestCredential123!");
+    expect(identity?.authenticationMethod).toBe(AuthenticationMethod.HOTSPOT);
 
     const access = await internetAccessRepository.findByPurchaseId(
       purchase!.id,

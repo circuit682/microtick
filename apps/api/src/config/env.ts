@@ -8,6 +8,19 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function requireBase64Key(name: string, expectedBytes: number): Buffer {
+  const value = requireEnv(name);
+  const key = Buffer.from(value, "base64");
+
+  if (key.length !== expectedBytes) {
+    throw new Error(
+      `${name} must be a base64-encoded ${expectedBytes}-byte key.`,
+    );
+  }
+
+  return key;
+}
+
 export const env = {
   get database() {
     return {
@@ -24,6 +37,15 @@ export const env = {
       host: requireEnv("APP_HOST"),
 
       redirectUrl: requireEnv("PAYMENT_REDIRECT_URL"),
+    };
+  },
+
+  get security() {
+    return {
+      networkIdentityEncryptionKey: requireBase64Key(
+        "NETWORK_IDENTITY_ENCRYPTION_KEY",
+        32,
+      ),
     };
   },
 };
