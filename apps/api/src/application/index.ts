@@ -1,1 +1,1 @@
-import {} from "@application";
+export * from "./identity/GetNetworkIdentities.js";

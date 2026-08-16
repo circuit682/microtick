@@ -9,3 +9,5 @@ export * from "./Validity/index.js";
 export * from "./ConsumptionPolicy/index.js";
 export * from "./NetworkProfile/index.js";
 export * from "./NetworkIdentity/index.js";
+export * from "./Customer/index.js";
+export * from "./Session/index.js";

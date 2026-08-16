@@ -112,3 +112,33 @@ model NetworkIdentity {
 
   @@index([customerId])
 }
+
+model Customer {
+  id          String   @id
+  phoneNumber String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions Session[]
+
+  @@index([phoneNumber])
+}
+
+enum SessionStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+model Session {
+  id         String        @id
+  customerId String
+  customer   Customer      @relation(fields: [customerId], references: [id])
+
+  createdAt  DateTime      @default(now())
+  expiresAt  DateTime
+  status     SessionStatus
+
+  @@index([customerId])
+  @@index([customerId, status])
+}
