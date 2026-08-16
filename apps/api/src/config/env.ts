@@ -46,6 +46,12 @@ export const env = {
         "NETWORK_IDENTITY_ENCRYPTION_KEY",
         32,
       ),
+
+      jwtSecret: requireBase64Key("JWT_SECRET", 32),
+
+      jwtIssuer: requireEnv("JWT_ISSUER"),
+
+      jwtAudience: requireEnv("JWT_AUDIENCE"),
     };
   },
 };
