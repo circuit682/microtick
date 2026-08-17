@@ -42,6 +42,7 @@ export const env = {
       provider: requireEnv("OTP_PROVIDER"),
       username: requireEnv("OTP_PROVIDER_USERNAME"),
       apiKey: requireEnv("OTP_PROVIDER_API_KEY"),
+      hashSecret: requireBase64Key("OTP_HASH_SECRET", 32),
       senderId: process.env.OTP_PROVIDER_SENDER_ID,
     };
   },

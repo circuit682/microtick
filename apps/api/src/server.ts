@@ -13,10 +13,18 @@ import {
   createGetActiveSessionController,
 } from "./composition/session.js";
 
+import {
+  createCreateOtpChallengeController,
+  createVerifyOtpCodeController,
+} from "./composition/otp.js";
+
 import { createCustomerRoutes } from "./http/customer/routes/customerRoutes.js";
 import { createSessionRoutes } from "./http/session/routes/sessionRoutes.js";
+import { createOtpRoutes } from "./http/otp/routes/otpRoutes.js";
 
-export function createServer() {
+import type { OtpDeliveryProvider } from "@infrastructure/otp/OtpDeliveryService.js";
+
+export function createServer(otpDeliveryProvider?: OtpDeliveryProvider) {
   const server = Fastify({
     logger: true,
   });
@@ -30,6 +38,11 @@ export function createServer() {
   const createSessionController = createCreateSessionController();
 
   const getActiveSessionController = createGetActiveSessionController();
+
+  const createOtpChallengeController =
+    createCreateOtpChallengeController(otpDeliveryProvider);
+
+  const verifyOtpCodeController = createVerifyOtpCodeController();
 
   server.register(
     createPaymentRoutes(purchasePaymentController, intaSendWebhookController),
@@ -46,6 +59,13 @@ export function createServer() {
     createSessionRoutes(createSessionController, getActiveSessionController),
     {
       prefix: "/customers",
+    },
+  );
+
+  server.register(
+    createOtpRoutes(createOtpChallengeController, verifyOtpCodeController),
+    {
+      prefix: "/otp",
     },
   );
 

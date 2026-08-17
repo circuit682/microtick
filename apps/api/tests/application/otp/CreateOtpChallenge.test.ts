@@ -5,6 +5,7 @@ import type {
   OtpChallenge,
   OtpChallengeRepository,
 } from "@application/ports/OtpChallengeRepository.js";
+import type { OtpCodeGenerator } from "@application/ports/OtpCodeGenerator.js";
 import type { OtpCodeHasher } from "@application/ports/OtpCodeHasher.js";
 import type { IdentifierGenerator } from "@shared";
 
@@ -42,6 +43,10 @@ describe("CreateOtpChallenge", () => {
       generate: () => "challenge-001",
     };
 
+    const codeGenerator: OtpCodeGenerator = {
+      generate: () => "123456",
+    };
+
     const hashedInputs: {
       challengeId: string;
       code: string;
@@ -64,15 +69,13 @@ describe("CreateOtpChallenge", () => {
       repository,
       identifierGenerator,
       codeHasher,
+      codeGenerator,
     );
-
-    const createdAt = new Date("2026-08-16T19:00:00Z");
 
     const result = await service.execute({
       phoneNumber: "0712345678",
-      code: "123456",
       expiresAt: new Date("2026-08-16T19:05:00Z"),
-      createdAt,
+      createdAt: new Date("2026-08-16T19:00:00Z"),
     });
 
     expect(result).toEqual({
@@ -106,6 +109,10 @@ describe("CreateOtpChallenge", () => {
       generate: () => "challenge-specific-id",
     };
 
+    const codeGenerator: OtpCodeGenerator = {
+      generate: () => "654321",
+    };
+
     let receivedChallengeId: string | undefined;
 
     const codeHasher: OtpCodeHasher = {
@@ -121,11 +128,11 @@ describe("CreateOtpChallenge", () => {
       repository,
       identifierGenerator,
       codeHasher,
+      codeGenerator,
     );
 
     await service.execute({
       phoneNumber: "0712345678",
-      code: "654321",
       expiresAt: new Date("2026-08-16T19:05:00Z"),
       createdAt: new Date("2026-08-16T19:00:00Z"),
     });
@@ -140,6 +147,10 @@ describe("CreateOtpChallenge", () => {
       generate: () => "challenge-002",
     };
 
+    const codeGenerator: OtpCodeGenerator = {
+      generate: () => "123456",
+    };
+
     const codeHasher: OtpCodeHasher = {
       hash: () => "hashed-otp-value",
       verify: () => true,
@@ -149,11 +160,11 @@ describe("CreateOtpChallenge", () => {
       repository,
       identifierGenerator,
       codeHasher,
+      codeGenerator,
     );
 
     await service.execute({
       phoneNumber: "0712345678",
-      code: "123456",
       expiresAt: new Date("2026-08-16T19:05:00Z"),
       createdAt: new Date("2026-08-16T19:00:00Z"),
     });
@@ -169,6 +180,10 @@ describe("CreateOtpChallenge", () => {
       generate: () => "challenge-003",
     };
 
+    const codeGenerator: OtpCodeGenerator = {
+      generate: () => "987654",
+    };
+
     const codeHasher: OtpCodeHasher = {
       hash: () => "hashed-otp",
       verify: () => true,
@@ -178,11 +193,11 @@ describe("CreateOtpChallenge", () => {
       repository,
       identifierGenerator,
       codeHasher,
+      codeGenerator,
     );
 
     const result = await service.execute({
       phoneNumber: "0712345678",
-      code: "987654",
       expiresAt: new Date("2026-08-16T19:05:00Z"),
       createdAt: new Date("2026-08-16T19:00:00Z"),
     });

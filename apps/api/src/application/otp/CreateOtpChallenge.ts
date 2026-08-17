@@ -1,10 +1,11 @@
 import type { OtpChallengeRepository } from "@application/ports/OtpChallengeRepository.js";
+import type { OtpCodeGenerator } from "@application/ports/OtpCodeGenerator.js";
 import type { OtpCodeHasher } from "@application/ports/OtpCodeHasher.js";
+
 import type { IdentifierGenerator } from "@shared";
 
 export interface CreateOtpChallengeCommand {
   phoneNumber: string;
-  code: string;
   createdAt: Date;
   expiresAt: Date;
 }
@@ -27,14 +28,16 @@ export class CreateOtpChallenge implements CreateOtpChallengeUseCase {
     private readonly challengeRepository: OtpChallengeRepository,
     private readonly identifierGenerator: IdentifierGenerator,
     private readonly codeHasher: OtpCodeHasher,
+    private readonly codeGenerator: OtpCodeGenerator,
   ) {}
 
   async execute(
     command: CreateOtpChallengeCommand,
   ): Promise<CreateOtpChallengeResult> {
     const challengeId = this.identifierGenerator.generate();
+    const code = this.codeGenerator.generate();
 
-    const codeHash = this.codeHasher.hash(challengeId, command.code);
+    const codeHash = this.codeHasher.hash(challengeId, code);
 
     await this.challengeRepository.save({
       id: challengeId,
@@ -46,7 +49,7 @@ export class CreateOtpChallenge implements CreateOtpChallengeUseCase {
     return {
       challengeId,
       phoneNumber: command.phoneNumber,
-      code: command.code,
+      code,
       expiresAt: command.expiresAt,
     };
   }
