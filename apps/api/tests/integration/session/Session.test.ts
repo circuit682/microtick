@@ -29,7 +29,7 @@ describe("Customer sessions", () => {
       method: "POST",
       url: `/customers/${customer.id}/session`,
       payload: {
-        expiresAt: "2026-08-16T14:00:00.000Z",
+        expiresAt: "2026-08-18T14:00:00.000Z",
       },
     });
 
@@ -39,7 +39,7 @@ describe("Customer sessions", () => {
 
     expect(body.customerId).toBe(customer.id);
     expect(body.status).toBe("ACTIVE");
-    expect(body.expiresAt).toBe("2026-08-16T14:00:00.000Z");
+    expect(body.expiresAt).toBe("2026-08-18T14:00:00.000Z");
 
     const stored = await prisma.session.findUnique({
       where: {
@@ -66,7 +66,7 @@ describe("Customer sessions", () => {
       data: {
         id: "session-http-001",
         customerId: customer.id,
-        expiresAt: new Date("2026-08-16T14:00:00.000Z"),
+        expiresAt: new Date("2026-08-18T14:00:00.000Z"),
         status: "ACTIVE",
       },
     });

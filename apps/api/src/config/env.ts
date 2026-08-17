@@ -31,12 +31,18 @@ export const env = {
   get intaSend() {
     return {
       publishableKey: requireEnv("INTASEND_PUBLISHABLE_KEY"),
-
       baseUrl: requireEnv("INTASEND_BASE_URL"),
-
       host: requireEnv("APP_HOST"),
-
       redirectUrl: requireEnv("PAYMENT_REDIRECT_URL"),
+    };
+  },
+
+  get otp() {
+    return {
+      provider: requireEnv("OTP_PROVIDER"),
+      username: requireEnv("OTP_PROVIDER_USERNAME"),
+      apiKey: requireEnv("OTP_PROVIDER_API_KEY"),
+      senderId: process.env.OTP_PROVIDER_SENDER_ID,
     };
   },
 

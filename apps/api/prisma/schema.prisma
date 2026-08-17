@@ -142,3 +142,13 @@ model Session {
   @@index([customerId])
   @@index([customerId, status])
 }
+
+model OtpChallenge {
+  id          String   @id
+  phoneNumber String
+  codeHash    String
+  expiresAt   DateTime
+
+  @@index([phoneNumber])
+  @@index([phoneNumber, expiresAt])
+}
