@@ -21,6 +21,8 @@ import {
 import { createCustomerRoutes } from "./http/customer/routes/customerRoutes.js";
 import { createSessionRoutes } from "./http/session/routes/sessionRoutes.js";
 import { createOtpRoutes } from "./http/otp/routes/otpRoutes.js";
+import { createAuthenticateCustomerController } from "./composition/auth.js";
+import { createAuthRoutes } from "./http/auth/routes/authRoutes.js";
 
 import type { OtpDeliveryProvider } from "@infrastructure/otp/OtpDeliveryService.js";
 
@@ -43,6 +45,8 @@ export function createServer(otpDeliveryProvider?: OtpDeliveryProvider) {
     createCreateOtpChallengeController(otpDeliveryProvider);
 
   const verifyOtpCodeController = createVerifyOtpCodeController();
+
+  const authenticateCustomerController = createAuthenticateCustomerController();
 
   server.register(
     createPaymentRoutes(purchasePaymentController, intaSendWebhookController),
@@ -68,6 +72,10 @@ export function createServer(otpDeliveryProvider?: OtpDeliveryProvider) {
       prefix: "/otp",
     },
   );
+
+  server.register(createAuthRoutes(authenticateCustomerController), {
+    prefix: "/auth",
+  });
 
   return server;
 }

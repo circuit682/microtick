@@ -18,9 +18,10 @@ describe("AuthenticateCustomer", () => {
 
     try {
       const createdAt = new Date("2026-08-16T12:00:00Z");
-      const sessionExpiresAt = new Date("2026-08-16T13:00:00Z");
 
       vi.setSystemTime(createdAt);
+
+      const sessionExpiresAt = new Date(createdAt.getTime() + 60 * 60 * 1000);
 
       const customerRepository = new InMemoryCustomerRepository();
       const sessionRepository = new InMemorySessionRepository();
@@ -133,11 +134,13 @@ describe("AuthenticateCustomer", () => {
       accessTokenService,
     );
 
+    const sessionExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
     await expect(
       authenticateCustomer.execute({
         phoneNumber: customer.phoneNumber,
         verificationCode: "wrong-code",
-        sessionExpiresAt: new Date("2026-08-16T13:00:00Z"),
+        sessionExpiresAt,
       }),
     ).rejects.toThrow("Invalid verification code.");
 
@@ -175,11 +178,13 @@ describe("AuthenticateCustomer", () => {
       accessTokenService,
     );
 
+    const sessionExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
     await expect(
       authenticateCustomer.execute({
         phoneNumber: "0712345678",
         verificationCode: "123456",
-        sessionExpiresAt: new Date("2026-08-16T13:00:00Z"),
+        sessionExpiresAt,
       }),
     ).rejects.toThrow("Customer not found.");
   });
