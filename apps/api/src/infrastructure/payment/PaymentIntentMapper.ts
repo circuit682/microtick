@@ -6,6 +6,7 @@ export class PaymentIntentMapper {
   static toDomain(paymentIntent: PrismaPaymentIntent): PaymentIntent {
     return PaymentIntent.reconstitute({
       id: paymentIntent.id,
+      customerId: paymentIntent.customerId,
       planId: paymentIntent.planId,
       amount: Money.fromMinorUnits(paymentIntent.amountMinor),
       phoneNumber: paymentIntent.phoneNumber,
@@ -17,6 +18,7 @@ export class PaymentIntentMapper {
   static toPersistence(paymentIntent: PaymentIntent) {
     return {
       id: paymentIntent.id,
+      customerId: paymentIntent.customerId,
       planId: paymentIntent.planId,
       reference: paymentIntent.reference,
       phoneNumber: paymentIntent.phoneNumber,

@@ -8,6 +8,7 @@ import type { PlanRepository } from "./PlanRepository.js";
 import type { PurchasePlanResult } from "./PurchasePlanResult.js";
 
 export interface PurchasePlanCommand {
+  customerId: string;
   planId: string;
   phoneNumber: string;
 }
@@ -55,6 +56,7 @@ export class PurchasePlan {
     // Create the business representation of this payment request.
     const paymentIntent = PaymentIntent.create({
       id: paymentId,
+      customerId: command.customerId,
       planId: plan.id,
       amount: plan.price,
       phoneNumber: command.phoneNumber,

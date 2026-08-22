@@ -6,6 +6,7 @@ import { PaymentStatus } from "./PaymentStatus.js";
 
 export interface PaymentIntentProps {
   id: string;
+  customerId: string;
   planId: string;
   amount: Money;
   phoneNumber: string;
@@ -15,6 +16,7 @@ export interface PaymentIntentProps {
 
 export interface CreatePaymentIntentProps {
   id: string;
+  customerId: string;
   planId: string;
   amount: Money;
   phoneNumber: string;
@@ -37,6 +39,10 @@ export class PaymentIntent {
 
   get id(): string {
     return this.props.id;
+  }
+
+  get customerId(): string {
+    return this.props.customerId;
   }
 
   get planId(): string {

@@ -20,6 +20,7 @@ describe("InitiatePayment", () => {
 
     const paymentIntent = PaymentIntent.create({
       id: "payment-intent-1",
+      customerId: "customer-001",
       planId: "plan-123",
       amount: Money.fromMinorUnits(500),
       phoneNumber: "0712345678",

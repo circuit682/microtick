@@ -73,6 +73,7 @@ describe("PurchasePlan", () => {
     await purchasePlan.execute({
       planId: createdPlan.id,
       phoneNumber: "254712345678",
+      customerId: "customer-001",
     });
 
     // Then
@@ -128,6 +129,7 @@ describe("PurchasePlan", () => {
       purchasePlan.execute({
         planId: createdPlan.id,
         phoneNumber: "254712345678",
+        customerId: "customer-001",
       }),
     ).rejects.toThrow(ValidationError);
 
@@ -135,6 +137,7 @@ describe("PurchasePlan", () => {
       purchasePlan.execute({
         planId: createdPlan.id,
         phoneNumber: "254712345678",
+        customerId: "customer-001",
       }),
     ).rejects.toMatchObject({
       code: ErrorCode.PLAN_INACTIVE,
@@ -167,6 +170,7 @@ describe("PurchasePlan", () => {
       purchasePlan.execute({
         planId: "missing-plan",
         phoneNumber: "254712345678",
+        customerId: "customer-001",
       }),
     ).rejects.toThrow(ValidationError);
 
@@ -174,6 +178,7 @@ describe("PurchasePlan", () => {
       purchasePlan.execute({
         planId: "missing-plan",
         phoneNumber: "254712345678",
+        customerId: "customer-001",
       }),
     ).rejects.toMatchObject({
       code: ErrorCode.PLAN_NOT_FOUND,
@@ -207,6 +212,7 @@ describe("PurchasePlan", () => {
     const result = await purchasePlan.execute({
       planId: createdPlan.id,
       phoneNumber: "254712345678",
+      customerId: "customer-001",
     });
 
     // Then

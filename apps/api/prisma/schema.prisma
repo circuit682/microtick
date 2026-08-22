@@ -29,6 +29,8 @@ model Plan {
 model PaymentIntent {
   id                String   @id
 
+  customerId        String
+
   planId            String
   plan              Plan     @relation(fields: [planId], references: [id])
 

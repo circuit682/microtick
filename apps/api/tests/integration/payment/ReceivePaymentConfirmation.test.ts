@@ -69,6 +69,7 @@ describe("POST /payments/intasend/webhook", () => {
 
     const payment = PaymentIntent.create({
       id: identifierGenerator.generate(),
+      customerId: "customer-001",
       planId: plan.id,
       amount: Money.fromMinorUnits(500),
       phoneNumber: "254712345678",

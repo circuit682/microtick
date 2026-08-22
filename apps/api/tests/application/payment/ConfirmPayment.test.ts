@@ -97,6 +97,7 @@ describe("ConfirmPayment", () => {
 
     const paymentIntent = PaymentIntent.create({
       id: "payment-intent-1",
+      customerId: "customer-001",
       planId: plan.id,
       amount: plan.price,
       phoneNumber: "0712345678",
