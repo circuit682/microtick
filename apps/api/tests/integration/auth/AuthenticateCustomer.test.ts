@@ -85,6 +85,21 @@ describe("Customer authentication", () => {
       sessionExpiresAt.toISOString(),
     );
 
+    const protectedResponse = await server.inject({
+      method: "GET",
+      url: `/customers/${customer.id}`,
+      headers: {
+        authorization: `Bearer ${body.accessToken}`,
+      },
+    });
+
+    expect(protectedResponse.statusCode).toBe(200);
+
+    expect(protectedResponse.json()).toEqual({
+      id: customer.id,
+      phoneNumber: customer.phoneNumber,
+    });
+
     await server.close();
   });
 
@@ -124,7 +139,12 @@ describe("Customer authentication", () => {
       },
     });
 
-    expect(authenticationResponse.statusCode).not.toBe(200);
+    expect(authenticationResponse.statusCode).toBe(401);
+
+    expect(authenticationResponse.json()).toEqual({
+      code: "AUTH_INVALID_VERIFICATION_CODE",
+      message: "Invalid verification code.",
+    });
 
     const session = await prisma.session.findFirst({
       where: {

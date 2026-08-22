@@ -82,10 +82,13 @@ describe("AuthenticateCustomer", () => {
       expect(result.sessionId).toBeTruthy();
       expect(result.accessToken).toBe("access-token-123");
 
-      expect(issuedClaims).toHaveLength(1);
-      expect(issuedClaims[0]?.customerId).toBe(customer.id);
-      expect(issuedClaims[0]?.sessionId).toBe(result.sessionId);
-      expect(issuedClaims[0]?.expiresAt).toEqual(sessionExpiresAt);
+      expect(issuedClaims).toEqual([
+        {
+          customerId: customer.id,
+          sessionId: result.sessionId,
+          expiresAt: sessionExpiresAt,
+        },
+      ]);
 
       const session = await sessionRepository.findById(result.sessionId);
 

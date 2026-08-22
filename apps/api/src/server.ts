@@ -21,15 +21,20 @@ import {
 import { createCustomerRoutes } from "./http/customer/routes/customerRoutes.js";
 import { createSessionRoutes } from "./http/session/routes/sessionRoutes.js";
 import { createOtpRoutes } from "./http/otp/routes/otpRoutes.js";
+
 import { createAuthenticateCustomerController } from "./composition/auth.js";
 import { createAuthRoutes } from "./http/auth/routes/authRoutes.js";
 
 import type { OtpDeliveryProvider } from "@infrastructure/otp/OtpDeliveryService.js";
 
+import { registerErrorHandler } from "./http/errors/errorHandler.js";
+
 export function createServer(otpDeliveryProvider?: OtpDeliveryProvider) {
   const server = Fastify({
     logger: true,
   });
+
+  registerErrorHandler(server);
 
   const purchasePaymentController = createPurchasePaymentController();
 

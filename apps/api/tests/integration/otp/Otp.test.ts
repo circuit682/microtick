@@ -189,4 +189,54 @@ describe("OTP", () => {
 
     await server.close();
   });
+
+  it("rejects an expired OTP code", async () => {
+    let deliveredCode: string | undefined;
+
+    const provider: OtpDeliveryProvider = {
+      send: async (_phoneNumber, message) => {
+        deliveredCode = message.split(": ").at(-1);
+      },
+    };
+
+    const server = createServer(provider);
+
+    const challengeResponse = await server.inject({
+      method: "POST",
+      url: "/otp/challenge",
+      payload: {
+        phoneNumber: "0712345678",
+      },
+    });
+
+    expect(challengeResponse.statusCode).toBe(201);
+
+    const challenge = challengeResponse.json();
+
+    await prisma.otpChallenge.update({
+      where: {
+        id: challenge.challengeId,
+      },
+      data: {
+        expiresAt: new Date(Date.now() - 1000),
+      },
+    });
+
+    const verifyResponse = await server.inject({
+      method: "POST",
+      url: "/otp/verify",
+      payload: {
+        challengeId: challenge.challengeId,
+        phoneNumber: "0712345678",
+        code: deliveredCode,
+      },
+    });
+
+    expect(verifyResponse.statusCode).toBe(200);
+    expect(verifyResponse.json()).toEqual({
+      verified: false,
+    });
+
+    await server.close();
+  });
 });

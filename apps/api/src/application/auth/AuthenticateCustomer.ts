@@ -3,6 +3,7 @@ import type { Customer } from "@domain";
 import type { CustomerRepository } from "@application/ports/CustomerRepository.js";
 import type { OtpVerificationService } from "@application/ports/OtpVerificationService.js";
 import type { AccessTokenService } from "@application/ports/AccessTokenService.js";
+import { ErrorCode, ValidationError } from "@shared";
 
 import {
   CreateSession,
@@ -44,7 +45,10 @@ export class AuthenticateCustomer implements AuthenticateCustomerUseCase {
     );
 
     if (!verified) {
-      throw new Error("Invalid verification code.");
+      throw new ValidationError(
+        ErrorCode.AUTH_INVALID_VERIFICATION_CODE,
+        "Invalid verification code.",
+      );
     }
 
     const customer = await this.customerRepository.findByPhoneNumber(
@@ -52,7 +56,13 @@ export class AuthenticateCustomer implements AuthenticateCustomerUseCase {
     );
 
     if (customer === null) {
-      throw new Error("Customer not found.");
+      throw new ValidationError(
+        ErrorCode.AUTH_CUSTOMER_NOT_FOUND,
+        "Customer not found.",
+        {
+          phoneNumber: command.phoneNumber,
+        },
+      );
     }
 
     const sessionCommand: CreateSessionCommand = {
