@@ -61,4 +61,14 @@ export const env = {
       jwtAudience: requireEnv("JWT_AUDIENCE"),
     };
   },
+  get routerOs() {
+    return {
+      host: requireEnv("ROUTEROS_HOST"),
+      username: requireEnv("ROUTEROS_USERNAME"),
+      password: requireEnv("ROUTEROS_PASSWORD"),
+      port: Number(process.env.ROUTEROS_PORT ?? "8728"),
+      timeout: Number(process.env.ROUTEROS_TIMEOUT ?? "5"),
+      tls: process.env.ROUTEROS_TLS === "true",
+    };
+  },
 };

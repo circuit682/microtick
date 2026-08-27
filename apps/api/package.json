@@ -19,6 +19,7 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "@fibercom/routeros-api": "^2.0.0",
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.9.0",
     "africastalking": "^0.8.3",
