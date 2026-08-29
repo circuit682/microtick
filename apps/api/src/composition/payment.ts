@@ -25,8 +25,12 @@ import { PrismaPlanRepository } from "@infrastructure/plan/PrismaPlanRepository.
 import { PrismaPurchaseRepository } from "@infrastructure/purchase/PrismaPurchaseRepository.js";
 
 import { createIntaSendGateway } from "./infrastructure/intaSend.js";
+import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 
-export function createIntaSendWebhookController(): IntaSendWebhookController {
+
+export function createIntaSendWebhookController(
+  routerOsClient: RouterOsClient,
+): IntaSendWebhookController {
   const paymentIntentRepository = new PrismaPaymentIntentRepository();
 
   const planRepository = new PrismaPlanRepository();
@@ -66,6 +70,7 @@ export function createIntaSendWebhookController(): IntaSendWebhookController {
     usernameGenerator,
     credentialGenerator,
     grantInternetAccess,
+    routerOsClient,
   );
 
   const confirmPayment = new ConfirmPayment(

@@ -8,6 +8,7 @@ import type { UsernameGenerator } from "@application/ports/UsernameGenerator.js"
 import { AuthenticationMethod, NetworkIdentity, Purchase } from "@domain";
 
 import type { IdentifierGenerator } from "@shared";
+import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 
 export interface FulfilPurchaseCommand {
   paymentId: string;
@@ -29,6 +30,7 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
     private readonly usernameGenerator: UsernameGenerator,
     private readonly credentialGenerator: CredentialGenerator,
     private readonly grantInternetAccess: GrantInternetAccess,
+    private readonly routerOsClient: RouterOsClient,
   ) {}
 
   async execute(command: FulfilPurchaseCommand): Promise<void> {
@@ -78,6 +80,11 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
     });
 
     await this.networkIdentityRepository.save(networkIdentity);
+
+    await this.routerOsClient.createHotspotUser(
+      networkIdentity.username,
+      networkIdentity.credential,
+    );
 
     await this.grantInternetAccess.execute({
       purchaseId: purchase.id,

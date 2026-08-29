@@ -4,6 +4,7 @@ import {
   createIntaSendWebhookController,
   createPurchasePaymentController,
 } from "./composition/payment.js";
+
 import { createPaymentRoutes } from "./http/payment/routes/paymentRoutes.js";
 
 import { createGetCustomerController } from "./composition/customer.js";
@@ -27,6 +28,8 @@ import { createAuthRoutes } from "./http/auth/routes/authRoutes.js";
 
 import type { OtpDeliveryProvider } from "@infrastructure/otp/OtpDeliveryService.js";
 
+import { RouterOsClientAdapter } from "@infrastructure/routeros/RouterOsClient.js";
+
 import { registerErrorHandler } from "./http/errors/errorHandler.js";
 
 export function createServer(otpDeliveryProvider?: OtpDeliveryProvider) {
@@ -34,11 +37,22 @@ export function createServer(otpDeliveryProvider?: OtpDeliveryProvider) {
     logger: true,
   });
 
+  const routerOsClient = new RouterOsClientAdapter();
+
+  server.addHook("onReady", async () => {
+    await routerOsClient.connect();
+  });
+
+  server.addHook("onClose", async () => {
+    await routerOsClient.close();
+  });
+
   registerErrorHandler(server);
 
   const purchasePaymentController = createPurchasePaymentController();
 
-  const intaSendWebhookController = createIntaSendWebhookController();
+  const intaSendWebhookController =
+    createIntaSendWebhookController(routerOsClient);
 
   const getCustomerController = createGetCustomerController();
 

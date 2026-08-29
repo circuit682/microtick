@@ -27,6 +27,7 @@ import { MemoryPaymentIntentRepository } from "@infrastructure/payment/MemoryPay
 import { MemoryPlanRepository } from "@infrastructure/plan/MemoryPlanRepository.js";
 
 import { InMemoryPurchaseRepository } from "../../doubles/purchase/InMemoryPurchaseRepository.js";
+import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 
 describe("ConfirmPayment", () => {
   it("should confirm a payment and fulfil the purchase", async () => {
@@ -113,6 +114,24 @@ describe("ConfirmPayment", () => {
       identifierGenerator,
     );
 
+    const routerOsClient: RouterOsClient = {
+      async connect() {},
+
+      async getSystemIdentity() {
+        return [];
+      },
+
+      async createHotspotUser() {},
+
+      async getHotspotUsers() {
+        return [];
+      },
+
+      async removeHotspotUser() {},
+
+      async close() {},
+    };
+
     const fulfilPurchase = new FulfilPurchase(
       purchaseRepository,
       planRepository,
@@ -121,8 +140,9 @@ describe("ConfirmPayment", () => {
       usernameGenerator,
       credentialGenerator,
       grantInternetAccess,
+      routerOsClient,
     );
-
+    
     const confirmPayment = new ConfirmPayment(
       paymentIntentRepository,
       fulfilPurchase,

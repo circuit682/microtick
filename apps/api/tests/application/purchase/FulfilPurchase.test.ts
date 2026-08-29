@@ -6,6 +6,7 @@ import { FulfilPurchase } from "@application/purchase/FulfilPurchase.js";
 import type { CredentialGenerator } from "@application/ports/CredentialGenerator.js";
 import type { NetworkIdentityRepository } from "@application/ports/NetworkIdentityRepository.js";
 import type { UsernameGenerator } from "@application/ports/UsernameGenerator.js";
+import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 
 import {
   AccessMethod,
@@ -106,6 +107,31 @@ describe("FulfilPurchase", () => {
       identifierGenerator,
     );
 
+    const routerOsCalls: Array<{
+      username: string;
+      password: string;
+    }> = [];
+
+    const routerOsClient: RouterOsClient = {
+      async connect() {},
+
+      async getSystemIdentity() {
+        return [];
+      },
+
+      async createHotspotUser(username, password) {
+        routerOsCalls.push({ username, password });
+      },
+
+      async getHotspotUsers() {
+        return [];
+      },
+
+      async removeHotspotUser() {},
+
+      async close() {},
+    };
+
     const fulfilPurchase = new FulfilPurchase(
       purchaseRepository,
       planRepository,
@@ -114,6 +140,7 @@ describe("FulfilPurchase", () => {
       usernameGenerator,
       credentialGenerator,
       grantInternetAccess,
+      routerOsClient,
     );
 
     return {
@@ -121,6 +148,7 @@ describe("FulfilPurchase", () => {
       planRepository,
       internetAccessRepository,
       identities,
+      routerOsCalls,
       fulfilPurchase,
     };
   }
@@ -131,6 +159,7 @@ describe("FulfilPurchase", () => {
       planRepository,
       internetAccessRepository,
       identities,
+      routerOsCalls,
       fulfilPurchase,
     } = createFulfilPurchase();
 
@@ -180,6 +209,12 @@ describe("FulfilPurchase", () => {
     expect(identity?.username).toBe("mt_test_customer_001");
     expect(identity?.credential).toBe("TestCredential123!");
     expect(identity?.authenticationMethod).toBe(AuthenticationMethod.HOTSPOT);
+    expect(routerOsCalls).toEqual([
+      {
+        username: "mt_test_customer_001",
+        password: "TestCredential123!",
+      },
+    ]);
 
     const access = await internetAccessRepository.findByPurchaseId(
       purchase!.id,
