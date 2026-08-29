@@ -26,6 +26,32 @@ export class RouterOsClientAdapter implements RouterOsClient {
     return this.client.getSystemIdentity();
   }
 
+  async createHotspotUser(username: string, password: string): Promise<void> {
+    await this.client.write(
+      "/ip/hotspot/user/add",
+      `=name=${username}`,
+      `=password=${password}`,
+      "=server=all",
+      "=profile=default",
+    );
+  }
+
+  async getHotspotUsers(): Promise<Record<string, string>[]> {
+    return this.client.write("/ip/hotspot/user/print");
+  }
+
+  async removeHotspotUser(username: string): Promise<void> {
+    const users = await this.getHotspotUsers();
+
+    const user = users.find((entry) => entry.name === username);
+
+    if (!user?.[".id"]) {
+      return;
+    }
+
+    await this.client.write("/ip/hotspot/user/remove", `=.id=${user[".id"]}`);
+  }
+
   async close(): Promise<void> {
     await this.client.close();
   }

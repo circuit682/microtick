@@ -26,4 +26,37 @@ describe("RouterOS client", () => {
       ]),
     );
   });
+
+  it("creates and removes a HotSpot user", async () => {
+    client = new RouterOsClientAdapter();
+
+    await client.connect();
+
+    const username = "mt-api-test";
+    const password = "TestCredential123!";
+
+    await client.createHotspotUser(username, password);
+
+    const users = await client.getHotspotUsers();
+
+    expect(users).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: username,
+        }),
+      ]),
+    );
+
+    await client.removeHotspotUser(username);
+
+    const remainingUsers = await client.getHotspotUsers();
+
+    expect(remainingUsers).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: username,
+        }),
+      ]),
+    );
+  });
 });
