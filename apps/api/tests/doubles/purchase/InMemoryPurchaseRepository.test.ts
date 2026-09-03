@@ -18,6 +18,7 @@ describe("InMemoryPurchaseRepository", () => {
       id: `purchase-${paymentIntentId}`,
       paymentIntentId,
       customerId: "customer-1",
+      networkIdentityId: `identity-${paymentIntentId}`,
 
       planId: "plan-1",
       planName: "Quiky",

@@ -21,6 +21,7 @@ export interface CreatePurchaseProps {
   consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
+  networkIdentityId: string;
 
   purchasedAt: Date;
 }
@@ -38,6 +39,7 @@ export interface PurchaseProps {
   consumptionPolicy: ConsumptionPolicy;
   serviceLevel: ServiceLevel;
   accessMethod: AccessMethod;
+  networkIdentityId: string;
 
   purchasedAt: Date;
 }
@@ -149,5 +151,9 @@ export class Purchase {
 
   get purchasedAt(): Date {
     return this.props.purchasedAt;
+  }
+  
+  get networkIdentityId(): string {
+    return this.props.networkIdentityId;
   }
 }

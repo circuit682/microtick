@@ -64,6 +64,7 @@ describe("PrismaInternetAccessRepository", () => {
       paymentIntentId: "payment-intent-001",
       id: "purchase-001",
       customerId: "customer-001",
+      networkIdentityId: "identity-001",
 
       planId: plan.id,
       planName: plan.name,

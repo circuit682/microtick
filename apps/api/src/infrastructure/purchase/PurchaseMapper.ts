@@ -17,6 +17,7 @@ export class PurchaseMapper {
       id: purchase.id,
       paymentIntentId: purchase.paymentIntentId,
       customerId: purchase.customerId,
+      networkIdentityId: purchase.networkIdentityId,
 
       planId: purchase.planId,
       planName: purchase.planName,
@@ -53,6 +54,7 @@ export class PurchaseMapper {
     id: string;
     paymentIntentId: string;
     customerId: string;
+    networkIdentityId: string;
     planId: string;
     planName: string;
     planPriceMinor: number;
@@ -64,6 +66,7 @@ export class PurchaseMapper {
       id: purchase.id,
       paymentIntentId: purchase.paymentIntentId,
       customerId: purchase.customerId,
+      networkIdentityId: purchase.networkIdentityId,
 
       planId: purchase.planId,
       planName: purchase.planName,

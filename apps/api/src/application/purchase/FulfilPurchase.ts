@@ -48,6 +48,8 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
       throw new Error(`Plan '${command.planId}' was not found.`);
     }
 
+    const networkIdentityId = this.identifierGenerator.generate();
+
     const purchase = Purchase.create({
       id: this.identifierGenerator.generate(),
 
@@ -67,12 +69,13 @@ export class FulfilPurchase implements FulfilPurchaseUseCase {
       accessMethod: plan.accessMethod,
 
       purchasedAt: command.purchasedAt,
+      networkIdentityId,
     });
 
     await this.purchaseRepository.save(purchase);
 
     const networkIdentity = NetworkIdentity.create({
-      id: this.identifierGenerator.generate(),
+      id: networkIdentityId,
       customerId: purchase.customerId,
       username: this.usernameGenerator.generate(),
       credential: this.credentialGenerator.generate(),

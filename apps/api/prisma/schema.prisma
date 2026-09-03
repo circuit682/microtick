@@ -57,6 +57,8 @@ model Purchase {
 
   customerId       String
 
+  networkIdentityId String @unique
+
   planId           String
   plan             Plan      @relation(fields: [planId], references: [id])
 
