@@ -151,5 +151,57 @@ describe("InternetAccess", () => {
 
       expect(access.fail()).toBe(access);
     });
+    it("records actual connected usage duration", () => {
+      const access = createAccess();
+
+      const connectedAt = new Date("2026-01-01T10:00:00Z");
+
+      const disconnectedAt = new Date("2026-01-01T10:12:00Z");
+
+      const updated = access.recordUsage(connectedAt, disconnectedAt);
+
+      expect(updated.consumedMinutes).toBe(12);
+
+      expect(access.consumedMinutes).toBe(0);
+
+      expect(updated).not.toBe(access);
+    });
+
+    it("accumulates usage across multiple connection intervals", () => {
+      const access = createAccess();
+
+      const first = access.recordUsage(
+        new Date("2026-01-01T10:00:00Z"),
+        new Date("2026-01-01T10:12:00Z"),
+      );
+
+      const second = first.recordUsage(
+        new Date("2026-01-01T14:00:00Z"),
+        new Date("2026-01-01T14:08:00Z"),
+      );
+
+      expect(second.consumedMinutes).toBe(20);
+
+      expect(first.consumedMinutes).toBe(12);
+
+      expect(access.consumedMinutes).toBe(0);
+
+      expect(second).not.toBe(first);
+    });
+
+    it("rejects a connection interval that ends before it starts", () => {
+      const access = createAccess();
+
+      const connectedAt = new Date("2026-01-01T10:12:00Z");
+
+      const disconnectedAt = new Date("2026-01-01T10:00:00Z");
+
+      expect(() => access.recordUsage(connectedAt, disconnectedAt)).toThrow(
+        new ValidationError(
+          ErrorCode.ACCESS_INVALID_USAGE,
+          "Internet access usage cannot end before it starts.",
+        ),
+      );
+    });
   });
 });

@@ -115,6 +115,50 @@ export class Plan {
         },
       );
     }
+
+    const validityMinutes = props.validity.toMinutes();
+
+    if (validityMinutes > 60 && validityMinutes < 120) {
+      throw new ValidationError(
+        ErrorCode.PLAN_INVALID_ALLOWANCE,
+        "Plan validity must be 60 minutes or less, or 120 minutes or more.",
+        {
+          validityMinutes,
+        },
+      );
+    }
+
+    if (
+      validityMinutes <= 60 &&
+      (props.consumptionPolicy !== ConsumptionPolicy.USAGE ||
+        props.accessMethod !== AccessMethod.SESSION)
+    ) {
+      throw new ValidationError(
+        ErrorCode.PLAN_INVALID_ALLOWANCE,
+        "Plans of 60 minutes or less must use usage consumption and session access.",
+        {
+          validityMinutes,
+          consumptionPolicy: props.consumptionPolicy,
+          accessMethod: props.accessMethod,
+        },
+      );
+    }
+
+    if (
+      validityMinutes >= 120 &&
+      (props.consumptionPolicy !== ConsumptionPolicy.CONTINUOUS ||
+        props.accessMethod !== AccessMethod.WALL_CLOCK)
+    ) {
+      throw new ValidationError(
+        ErrorCode.PLAN_INVALID_ALLOWANCE,
+        "Plans of 120 minutes or more must use continuous consumption and wall-clock access.",
+        {
+          validityMinutes,
+          consumptionPolicy: props.consumptionPolicy,
+          accessMethod: props.accessMethod,
+        },
+      );
+    }
   }
 
   get id(): string {

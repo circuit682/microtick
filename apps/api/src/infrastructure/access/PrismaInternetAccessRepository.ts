@@ -17,6 +17,7 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
         grantedAt: access.grantedAt,
         expiresAt: access.expiresAt,
         status: access.status,
+        consumedMinutes: access.consumedMinutes,
       },
 
       create: {
@@ -26,6 +27,7 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
         grantedAt: access.grantedAt,
         expiresAt: access.expiresAt,
         status: access.status,
+        consumedMinutes: access.consumedMinutes,
       },
     });
   }
@@ -48,6 +50,7 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
       grantedAt: record.grantedAt,
       expiresAt: record.expiresAt,
       status: record.status as InternetAccessStatus,
+      consumedMinutes: record.consumedMinutes,
     });
   }
 
@@ -69,6 +72,7 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
       grantedAt: record.grantedAt,
       expiresAt: record.expiresAt,
       status: record.status as InternetAccessStatus,
+      consumedMinutes: record.consumedMinutes,
     });
   }
 }

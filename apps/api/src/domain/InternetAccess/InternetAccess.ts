@@ -9,6 +9,7 @@ export interface InternetAccessProps {
   grantedAt: Date;
   expiresAt: Date;
   status: InternetAccessStatus;
+  consumedMinutes?: number;
 }
 
 export class InternetAccess {
@@ -19,6 +20,7 @@ export class InternetAccess {
 
     this.props = Object.freeze({
       ...props,
+      consumedMinutes: props.consumedMinutes ?? 0,
     });
   }
 
@@ -105,6 +107,23 @@ export class InternetAccess {
     });
   }
 
+  recordUsage(connectedAt: Date, disconnectedAt: Date): InternetAccess {
+    if (disconnectedAt < connectedAt) {
+      throw new ValidationError(
+        ErrorCode.ACCESS_INVALID_USAGE,
+        "Internet access usage cannot end before it starts.",
+      );
+    }
+
+    const usageMinutes =
+      (disconnectedAt.getTime() - connectedAt.getTime()) / 60000;
+
+    return InternetAccess.reconstitute({
+      ...this.props,
+      consumedMinutes: this.consumedMinutes + usageMinutes,
+    });
+  }
+
   get id(): string {
     return this.props.id;
   }
@@ -127,5 +146,9 @@ export class InternetAccess {
 
   get status(): InternetAccessStatus {
     return this.props.status;
+  }
+
+  get consumedMinutes(): number {
+    return this.props.consumedMinutes ?? 0;
   }
 }
