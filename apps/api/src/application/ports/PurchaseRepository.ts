@@ -21,4 +21,9 @@ export interface PurchaseRepository {
    * Returns all purchases belonging to a customer.
    */
   findByCustomerId(customerId: string): Promise<Purchase[]>;
+
+  /**
+   * Finds the purchase that owns a network identity.
+   */
+  findByNetworkIdentityId(networkIdentityId: string): Promise<Purchase | null>;
 }

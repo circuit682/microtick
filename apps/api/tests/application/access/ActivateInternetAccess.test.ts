@@ -91,6 +91,14 @@ describe("ActivateInternetAccess", () => {
       findByPaymentIntentId: async () => null,
 
       findByCustomerId: async () => [purchaseOne],
+
+      findByNetworkIdentityId: async (networkIdentityId) => {
+        if (networkIdentityId === purchaseOne.networkIdentityId) {
+          return purchaseOne;
+        }
+
+        return null;
+      },
     };
 
     const savedAccesses: InternetAccess[] = [];
@@ -331,6 +339,18 @@ describe("ActivateInternetAccess", () => {
       findByPaymentIntentId: async () => null,
 
       findByCustomerId: async () => [purchaseOne, purchaseTwo],
+
+      findByNetworkIdentityId: async (networkIdentityId) => {
+        if (networkIdentityId === purchaseOne.networkIdentityId) {
+          return purchaseOne;
+        }
+
+        if (networkIdentityId === purchaseTwo.networkIdentityId) {
+          return purchaseTwo;
+        }
+
+        return null;
+      },
     };
 
     const routerOsClient: RouterOsClient = {
