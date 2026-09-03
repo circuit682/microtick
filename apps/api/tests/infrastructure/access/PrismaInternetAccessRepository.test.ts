@@ -94,7 +94,6 @@ describe("PrismaInternetAccessRepository", () => {
       expiresAt: new Date("2026-08-01T10:30:00Z"),
 
       consumedMinutes: 12.5,
-      accessMethod: purchase.accessMethod,
     });
   }
 

@@ -40,6 +40,10 @@ export class RouterOsClientAdapter implements RouterOsClient {
     return this.client.write("/ip/hotspot/user/print");
   }
 
+  async getActiveHotspotSessions(): Promise<Record<string, string>[]> {
+    return this.client.write("/ip/hotspot/active/print");
+  }
+
   async removeHotspotUser(username: string): Promise<void> {
     const users = await this.getHotspotUsers();
 

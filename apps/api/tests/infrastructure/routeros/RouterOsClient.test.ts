@@ -59,4 +59,13 @@ describe("RouterOS client", () => {
       ]),
     );
   });
+  it("reads active HotSpot sessions", async () => {
+    client = new RouterOsClientAdapter();
+
+    await client.connect();
+
+    const sessions = await client.getActiveHotspotSessions();
+
+    expect(sessions).toEqual(expect.any(Array));
+  });
 });

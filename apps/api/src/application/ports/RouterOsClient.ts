@@ -7,6 +7,8 @@ export interface RouterOsClient {
 
   getHotspotUsers(): Promise<Record<string, string>[]>;
 
+  getActiveHotspotSessions(): Promise<Record<string, string>[]>;
+
   removeHotspotUser(username: string): Promise<void>;
 
   close(): Promise<void>;
