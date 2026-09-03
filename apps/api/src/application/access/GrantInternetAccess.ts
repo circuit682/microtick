@@ -51,7 +51,7 @@ export class GrantInternetAccess {
       customerId: command.customerId,
       grantedAt: command.grantedAt,
       expiresAt,
-      status: InternetAccessStatus.GRANTED,
+      status: InternetAccessStatus.PROVISIONING,
     });
 
     await this.repository.save(access);
