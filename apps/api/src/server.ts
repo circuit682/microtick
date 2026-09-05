@@ -5,6 +5,8 @@ import {
   createPurchasePaymentController,
 } from "./composition/payment.js";
 
+import { createRouterOsAccessPoller } from "./composition/access.js";
+
 import { createPaymentRoutes } from "./http/payment/routes/paymentRoutes.js";
 
 import { createGetCustomerController } from "./composition/customer.js";
@@ -28,31 +30,42 @@ import { createAuthRoutes } from "./http/auth/routes/authRoutes.js";
 
 import type { OtpDeliveryProvider } from "@infrastructure/otp/OtpDeliveryService.js";
 
+import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 import { RouterOsClientAdapter } from "@infrastructure/routeros/RouterOsClient.js";
 
 import { registerErrorHandler } from "./http/errors/errorHandler.js";
 
-export function createServer(otpDeliveryProvider?: OtpDeliveryProvider) {
+export function createServer(
+  otpDeliveryProvider?: OtpDeliveryProvider,
+  routerOsClient?: RouterOsClient,
+) {
   const server = Fastify({
     logger: true,
   });
 
-  const routerOsClient = new RouterOsClientAdapter();
+  const resolvedRouterOsClient = routerOsClient ?? new RouterOsClientAdapter();
+
+  const routerOsAccessPoller = createRouterOsAccessPoller(
+    resolvedRouterOsClient,
+  );
 
   server.addHook("onReady", async () => {
-    await routerOsClient.connect();
+    await resolvedRouterOsClient.connect();
+    routerOsAccessPoller.start();
   });
 
   server.addHook("onClose", async () => {
-    await routerOsClient.close();
+    routerOsAccessPoller.stop();
+    await resolvedRouterOsClient.close();
   });
 
   registerErrorHandler(server);
 
   const purchasePaymentController = createPurchasePaymentController();
 
-  const intaSendWebhookController =
-    createIntaSendWebhookController(routerOsClient);
+  const intaSendWebhookController = createIntaSendWebhookController(
+    resolvedRouterOsClient,
+  );
 
   const getCustomerController = createGetCustomerController();
 

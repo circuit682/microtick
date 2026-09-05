@@ -20,13 +20,10 @@
       "@http": ["./src/http/index.ts"],
       "@http/*": ["./src/http/*"],
       "@config/*": ["./src/config/*"],
+      "@composition": ["./src/composition/index.ts"],
+      "@composition/*": ["./src/composition/*"],
       "@generated/*": ["./src/generated/*"]
     }
   },
-  "include": [
-    "src",
-    "tests",
-    "prisma.config.ts"
-  ]
+  "include": ["src", "tests", "prisma.config.ts"]
 }
-

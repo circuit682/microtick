@@ -14,6 +14,7 @@ export default defineConfig({
       "@infrastructure": resolve(root, "src/infrastructure"),
       "@shared": resolve(root, "src/shared"),
       "@generated": resolve(root, "src/generated"),
+      "@composition": resolve(root, "src/composition"),
     },
   },
 
