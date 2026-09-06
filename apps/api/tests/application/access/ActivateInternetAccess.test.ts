@@ -170,6 +170,7 @@ describe("ActivateInternetAccess", () => {
       ],
 
       removeHotspotUser: async () => {},
+      removeActiveHotspotSession: async () => {},
 
       close: async () => {},
     };
@@ -370,6 +371,7 @@ describe("ActivateInternetAccess", () => {
       ],
 
       removeHotspotUser: async () => {},
+      removeActiveHotspotSession: async () => {},
 
       close: async () => {},
     };

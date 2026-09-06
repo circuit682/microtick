@@ -56,6 +56,21 @@ export class RouterOsClientAdapter implements RouterOsClient {
     await this.client.write("/ip/hotspot/user/remove", `=.id=${user[".id"]}`);
   }
 
+  async removeActiveHotspotSession(username: string): Promise<void> {
+    const sessions = await this.getActiveHotspotSessions();
+
+    const session = sessions.find((entry) => entry.user === username);
+
+    if (!session?.[".id"]) {
+      return;
+    }
+
+    await this.client.write(
+      "/ip/hotspot/active/remove",
+      `=.id=${session[".id"]}`,
+    );
+  }
+
   async close(): Promise<void> {
     await this.client.close();
   }

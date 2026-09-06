@@ -59,6 +59,7 @@ describe("RouterOS client", () => {
       ]),
     );
   });
+
   it("reads active HotSpot sessions", async () => {
     client = new RouterOsClientAdapter();
 
@@ -67,5 +68,36 @@ describe("RouterOS client", () => {
     const sessions = await client.getActiveHotspotSessions();
 
     expect(sessions).toEqual(expect.any(Array));
+  });
+
+  it("removes the active HotSpot session for a username", async () => {
+    client = new RouterOsClientAdapter();
+
+    await client.connect();
+
+    const username = "mt-active-session-test";
+
+    const sessionsBefore = await client.getActiveHotspotSessions();
+
+    expect(sessionsBefore).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ".id": expect.any(String),
+          user: username,
+        }),
+      ]),
+    );
+
+    await client.removeActiveHotspotSession(username);
+
+    const sessionsAfter = await client.getActiveHotspotSessions();
+
+    expect(sessionsAfter).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          user: username,
+        }),
+      ]),
+    );
   });
 });

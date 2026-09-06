@@ -28,4 +28,14 @@ export class InMemoryPurchaseRepository implements PurchaseRepository {
       ) ?? null
     );
   }
+
+  async findByNetworkIdentityId(
+    networkIdentityId: string,
+  ): Promise<Purchase | null> {
+    return (
+      [...this.purchases.values()].find(
+        (purchase) => purchase.networkIdentityId === networkIdentityId,
+      ) ?? null
+    );
+  }
 }

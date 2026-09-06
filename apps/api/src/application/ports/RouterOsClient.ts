@@ -11,5 +11,7 @@ export interface RouterOsClient {
 
   removeHotspotUser(username: string): Promise<void>;
 
+  removeActiveHotspotSession(username: string): Promise<void>;
+
   close(): Promise<void>;
 }
