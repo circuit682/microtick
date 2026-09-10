@@ -31,6 +31,7 @@ export class RecordInternetAccessUsageFromRouterOs {
 
       await this.recordInternetAccessUsage.execute({
         purchaseId: purchase.id,
+        sessionId: interval.sessionId,
         connectedAt: interval.connectedAt,
         disconnectedAt: interval.disconnectedAt,
       });

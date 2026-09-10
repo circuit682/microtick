@@ -95,6 +95,8 @@ describe("PrismaInternetAccessRepository", () => {
       expiresAt: new Date("2026-08-01T10:30:00Z"),
 
       consumedMinutes: 12.5,
+      usageSessionId: "router-session-001",
+      usageRecordedThrough: new Date("2026-08-01T10:12:30Z"),
     });
   }
 
@@ -109,6 +111,8 @@ describe("PrismaInternetAccessRepository", () => {
     expect(stored).not.toBeNull();
     expect(stored?.id).toBe(access.id);
     expect(stored?.consumedMinutes).toBe(12.5);
+    expect(stored?.usageSessionId).toBe(access.usageSessionId);
+    expect(stored?.usageRecordedThrough).toEqual(access.usageRecordedThrough);
   });
 
   it("finds access by customer id with consumed minutes", async () => {

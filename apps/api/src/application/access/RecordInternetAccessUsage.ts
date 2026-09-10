@@ -4,6 +4,7 @@ import { InternetAccess } from "@domain";
 
 export interface RecordInternetAccessUsageCommand {
   purchaseId: string;
+  sessionId?: string;
   connectedAt: Date;
   disconnectedAt: Date;
 }
@@ -26,10 +27,13 @@ export class RecordInternetAccessUsage implements RecordInternetAccessUsageUseCa
       );
     }
 
-    const updated = access.recordUsage(
-      command.connectedAt,
-      command.disconnectedAt,
-    );
+    const updated = command.sessionId
+      ? access.recordSessionUsage(
+          command.sessionId,
+          command.connectedAt,
+          command.disconnectedAt,
+        )
+      : access.recordUsage(command.connectedAt, command.disconnectedAt);
 
     await this.repository.save(updated);
 

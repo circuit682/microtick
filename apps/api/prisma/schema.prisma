@@ -96,6 +96,8 @@ model InternetAccess {
   grantedAt   DateTime
   expiresAt   DateTime
   consumedMinutes Float @default(0)
+  usageSessionId String?
+  usageRecordedThrough DateTime?
 
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt

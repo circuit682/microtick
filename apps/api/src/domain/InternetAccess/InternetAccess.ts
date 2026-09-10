@@ -10,6 +10,8 @@ export interface InternetAccessProps {
   expiresAt: Date;
   status: InternetAccessStatus;
   consumedMinutes?: number;
+  usageSessionId?: string;
+  usageRecordedThrough?: Date;
 }
 
 export class InternetAccess {
@@ -124,6 +126,42 @@ export class InternetAccess {
     });
   }
 
+  recordSessionUsage(
+    sessionId: string,
+    connectedAt: Date,
+    observedAt: Date,
+  ): InternetAccess {
+    if (observedAt < connectedAt) {
+      throw new ValidationError(
+        ErrorCode.ACCESS_INVALID_USAGE,
+        "Internet access usage cannot end before it starts.",
+      );
+    }
+
+    const isSameSession = this.props.usageSessionId === sessionId;
+    const previousObservation = isSameSession
+      ? this.props.usageRecordedThrough
+      : undefined;
+    const usageStart = previousObservation ?? connectedAt;
+
+    if (
+      isSameSession &&
+      previousObservation !== undefined &&
+      observedAt <= previousObservation
+    ) {
+      return this;
+    }
+
+    const usageMinutes = (observedAt.getTime() - usageStart.getTime()) / 60000;
+
+    return InternetAccess.reconstitute({
+      ...this.props,
+      consumedMinutes: this.consumedMinutes + usageMinutes,
+      usageSessionId: sessionId,
+      usageRecordedThrough: observedAt,
+    });
+  }
+
   get id(): string {
     return this.props.id;
   }
@@ -150,5 +188,13 @@ export class InternetAccess {
 
   get consumedMinutes(): number {
     return this.props.consumedMinutes ?? 0;
+  }
+
+  get usageSessionId(): string | undefined {
+    return this.props.usageSessionId;
+  }
+
+  get usageRecordedThrough(): Date | undefined {
+    return this.props.usageRecordedThrough;
   }
 }

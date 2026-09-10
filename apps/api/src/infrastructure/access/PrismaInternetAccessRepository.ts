@@ -34,6 +34,12 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
         expiresAt: access.expiresAt,
         status: access.status,
         consumedMinutes: access.consumedMinutes,
+        ...(access.usageSessionId === undefined
+          ? {}
+          : { usageSessionId: access.usageSessionId }),
+        ...(access.usageRecordedThrough === undefined
+          ? {}
+          : { usageRecordedThrough: access.usageRecordedThrough }),
       },
 
       create: {
@@ -44,6 +50,12 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
         expiresAt: access.expiresAt,
         status: access.status,
         consumedMinutes: access.consumedMinutes,
+        ...(access.usageSessionId === undefined
+          ? {}
+          : { usageSessionId: access.usageSessionId }),
+        ...(access.usageRecordedThrough === undefined
+          ? {}
+          : { usageRecordedThrough: access.usageRecordedThrough }),
       },
     });
   }
@@ -67,6 +79,12 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
       expiresAt: record.expiresAt,
       status: record.status as InternetAccessStatus,
       consumedMinutes: record.consumedMinutes,
+      ...(record.usageSessionId === null
+        ? {}
+        : { usageSessionId: record.usageSessionId }),
+      ...(record.usageRecordedThrough === null
+        ? {}
+        : { usageRecordedThrough: record.usageRecordedThrough }),
     });
   }
 
@@ -89,6 +107,12 @@ export class PrismaInternetAccessRepository implements InternetAccessRepository 
       expiresAt: record.expiresAt,
       status: record.status as InternetAccessStatus,
       consumedMinutes: record.consumedMinutes,
+      ...(record.usageSessionId === null
+        ? {}
+        : { usageSessionId: record.usageSessionId }),
+      ...(record.usageRecordedThrough === null
+        ? {}
+        : { usageRecordedThrough: record.usageRecordedThrough }),
     });
   }
 }

@@ -25,8 +25,8 @@ function parseRouterOsUptimeToMs(uptime: string): number {
       continue;
     }
 
-    const amount = Number.parseInt(match[1], 10);
-    const unit = match[2].toLowerCase();
+    const amount = Number.parseInt(match[1]!, 10);
+    const unit = match[2]!.toLowerCase();
 
     switch (unit) {
       case "w":
@@ -96,22 +96,23 @@ export class RouterOsClientAdapter implements RouterOsClient {
     const sessions = await this.getActiveHotspotSessions();
     const now = new Date();
 
-    return sessions
-      .filter(
-        (session) =>
-          typeof session.user === "string" && session.user.length > 0,
-      )
-      .map((session) => {
-        const connectedAtMs =
-          now.getTime() - parseRouterOsUptimeToMs(session.uptime ?? "");
+    return sessions.flatMap((session) => {
+      if (typeof session.user !== "string" || session.user.length === 0) {
+        return [];
+      }
 
-        return {
-          username: session.user,
-          connectedAt: new Date(connectedAtMs),
-          disconnectedAt: now,
-        };
-      })
-      .filter((session) => Number.isFinite(session.connectedAt.getTime()));
+      const connectedAtMs =
+        now.getTime() - parseRouterOsUptimeToMs(session.uptime ?? "");
+
+      const interval = {
+        sessionId: session[".id"] ?? `${session.user}:${connectedAtMs}`,
+        username: session.user,
+        connectedAt: new Date(connectedAtMs),
+        disconnectedAt: now,
+      } satisfies RouterOsSessionInterval;
+
+      return Number.isFinite(interval.connectedAt.getTime()) ? [interval] : [];
+    });
   }
 
   async removeHotspotUser(username: string): Promise<void> {

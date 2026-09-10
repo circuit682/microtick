@@ -44,6 +44,7 @@ describe("RecordInternetAccessUsageFromRouterOs", () => {
     });
 
     const interval: RouterOsSessionInterval = {
+      sessionId: "router-session-001",
       username: identity.username,
       connectedAt: new Date("2026-01-01T10:00:00Z"),
       disconnectedAt: new Date("2026-01-01T10:12:00Z"),
@@ -91,6 +92,7 @@ describe("RecordInternetAccessUsageFromRouterOs", () => {
 
     expect(execute).toHaveBeenCalledWith({
       purchaseId: purchase.id,
+      sessionId: interval.sessionId,
       connectedAt: interval.connectedAt,
       disconnectedAt: interval.disconnectedAt,
     });

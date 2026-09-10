@@ -189,6 +189,32 @@ describe("InternetAccess", () => {
       expect(second).not.toBe(first);
     });
 
+    it("records only the new duration when the same RouterOS session is polled again", () => {
+      const access = createAccess();
+
+      const first = access.recordSessionUsage(
+        "router-session-001",
+        new Date("2026-01-01T10:00:00Z"),
+        new Date("2026-01-01T10:12:00Z"),
+      );
+
+      const second = first.recordSessionUsage(
+        "router-session-001",
+        new Date("2026-01-01T10:00:00Z"),
+        new Date("2026-01-01T10:15:00Z"),
+      );
+
+      const duplicate = second.recordSessionUsage(
+        "router-session-001",
+        new Date("2026-01-01T10:00:00Z"),
+        new Date("2026-01-01T10:15:00Z"),
+      );
+
+      expect(first.consumedMinutes).toBe(12);
+      expect(second.consumedMinutes).toBe(15);
+      expect(duplicate).toBe(second);
+    });
+
     it("rejects a connection interval that ends before it starts", () => {
       const access = createAccess();
 
