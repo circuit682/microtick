@@ -2,7 +2,55 @@ import { MikrotikAPI } from "@fibercom/routeros-api";
 
 import { env } from "@config/env.js";
 
+import type { RouterOsSessionInterval } from "@application/access/RouterOsSessionInterval.js";
 import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
+
+function parseRouterOsUptimeToMs(uptime: string): number {
+  if (!uptime) {
+    return Number.NaN;
+  }
+
+  const tokens = uptime.match(/(\d+)([wdhms])/gi) ?? [];
+
+  if (tokens.length === 0) {
+    return Number.NaN;
+  }
+
+  let totalMs = 0;
+
+  for (const token of tokens) {
+    const match = token.match(/(\d+)([wdhms])/i);
+
+    if (!match) {
+      continue;
+    }
+
+    const amount = Number.parseInt(match[1], 10);
+    const unit = match[2].toLowerCase();
+
+    switch (unit) {
+      case "w":
+        totalMs += amount * 7 * 24 * 60 * 60 * 1000;
+        break;
+      case "d":
+        totalMs += amount * 24 * 60 * 60 * 1000;
+        break;
+      case "h":
+        totalMs += amount * 60 * 60 * 1000;
+        break;
+      case "m":
+        totalMs += amount * 60 * 1000;
+        break;
+      case "s":
+        totalMs += amount * 1000;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return totalMs;
+}
 
 export class RouterOsClientAdapter implements RouterOsClient {
   private readonly client: MikrotikAPI;
@@ -42,6 +90,28 @@ export class RouterOsClientAdapter implements RouterOsClient {
 
   async getActiveHotspotSessions(): Promise<Record<string, string>[]> {
     return this.client.write("/ip/hotspot/active/print");
+  }
+
+  async getHotspotSessionIntervals(): Promise<RouterOsSessionInterval[]> {
+    const sessions = await this.getActiveHotspotSessions();
+    const now = new Date();
+
+    return sessions
+      .filter(
+        (session) =>
+          typeof session.user === "string" && session.user.length > 0,
+      )
+      .map((session) => {
+        const connectedAtMs =
+          now.getTime() - parseRouterOsUptimeToMs(session.uptime ?? "");
+
+        return {
+          username: session.user,
+          connectedAt: new Date(connectedAtMs),
+          disconnectedAt: now,
+        };
+      })
+      .filter((session) => Number.isFinite(session.connectedAt.getTime()));
   }
 
   async removeHotspotUser(username: string): Promise<void> {

@@ -62,6 +62,7 @@ describe("ActivateInternetAccessFromRouterOs", () => {
           user: identity.username,
         },
       ],
+      getHotspotSessionIntervals: async () => [],
       removeHotspotUser: async () => {},
       removeActiveHotspotSession: async () => {},
       close: async () => {},

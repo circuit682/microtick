@@ -1,5 +1,8 @@
 import { ActivateInternetAccess } from "@application/access/ActivateInternetAccess.js";
 import { ActivateInternetAccessFromRouterOs } from "@application/access/ActivateInternetAccessFromRouterOs.js";
+import { ExpireExpiredInternetAccess } from "@application/access/ExpireExpiredInternetAccess.js";
+import { RecordInternetAccessUsage } from "@application/access/RecordInternetAccessUsage.js";
+import { RecordInternetAccessUsageFromRouterOs } from "@application/access/RecordInternetAccessUsageFromRouterOs.js";
 import { RouterOsAccessPoller } from "@application/access/RouterOsAccessPoller.js";
 
 import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
@@ -42,8 +45,28 @@ export function createRouterOsAccessPoller(
       activateInternetAccess,
     );
 
-  return new RouterOsAccessPoller(
-    () => activateInternetAccessFromRouterOs.execute(),
-    1000,
+  const recordInternetAccessUsage = new RecordInternetAccessUsage(
+    internetAccessRepository,
   );
+
+  const recordInternetAccessUsageFromRouterOs =
+    new RecordInternetAccessUsageFromRouterOs(
+      networkIdentityRepository,
+      purchaseRepository,
+      recordInternetAccessUsage,
+    );
+
+  const expireExpiredInternetAccess = new ExpireExpiredInternetAccess(
+    internetAccessRepository,
+    purchaseRepository,
+    networkIdentityRepository,
+    routerOsClient,
+  );
+
+  return new RouterOsAccessPoller(async () => {
+    await activateInternetAccessFromRouterOs.execute();
+    const intervals = await routerOsClient.getHotspotSessionIntervals();
+    await recordInternetAccessUsageFromRouterOs.execute(intervals);
+    await expireExpiredInternetAccess.execute({ now: new Date() });
+  }, 1000);
 }

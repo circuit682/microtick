@@ -16,6 +16,7 @@ describe("server", () => {
       createHotspotUser: vi.fn().mockResolvedValue(undefined),
       getHotspotUsers: vi.fn().mockResolvedValue([]),
       getActiveHotspotSessions: vi.fn().mockResolvedValue([]),
+      getHotspotSessionIntervals: vi.fn().mockResolvedValue([]),
       removeHotspotUser: vi.fn().mockResolvedValue(undefined),
       removeActiveHotspotSession: vi.fn().mockResolvedValue(undefined),
       close: vi.fn().mockResolvedValue(undefined),

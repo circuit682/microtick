@@ -1,3 +1,5 @@
+import type { RouterOsSessionInterval } from "@application/access/RouterOsSessionInterval.js";
+
 export interface RouterOsClient {
   connect(): Promise<void>;
 
@@ -8,6 +10,8 @@ export interface RouterOsClient {
   getHotspotUsers(): Promise<Record<string, string>[]>;
 
   getActiveHotspotSessions(): Promise<Record<string, string>[]>;
+
+  getHotspotSessionIntervals(): Promise<RouterOsSessionInterval[]>;
 
   removeHotspotUser(username: string): Promise<void>;
 

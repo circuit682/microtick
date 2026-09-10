@@ -5,6 +5,22 @@ import type { InternetAccessRepository } from "@application/ports/InternetAccess
 import { prisma } from "@infrastructure/database/prisma.js";
 
 export class PrismaInternetAccessRepository implements InternetAccessRepository {
+  async findAll(): Promise<InternetAccess[]> {
+    const records = await prisma.internetAccess.findMany();
+
+    return records.map((record) =>
+      InternetAccess.reconstitute({
+        id: record.id,
+        purchaseId: record.purchaseId,
+        customerId: record.customerId,
+        grantedAt: record.grantedAt,
+        expiresAt: record.expiresAt,
+        status: record.status as InternetAccessStatus,
+        consumedMinutes: record.consumedMinutes,
+      }),
+    );
+  }
+
   async save(access: InternetAccess): Promise<void> {
     await prisma.internetAccess.upsert({
       where: {

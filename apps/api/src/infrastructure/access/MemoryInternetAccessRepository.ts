@@ -5,6 +5,10 @@ import { InternetAccessRepository } from "@application/ports/InternetAccessRepos
 export class MemoryInternetAccessRepository implements InternetAccessRepository {
   private readonly accesses = new Map<string, InternetAccess>();
 
+  async findAll(): Promise<InternetAccess[]> {
+    return [...this.accesses.values()];
+  }
+
   async save(access: InternetAccess): Promise<void> {
     this.accesses.set(access.id, access);
   }
