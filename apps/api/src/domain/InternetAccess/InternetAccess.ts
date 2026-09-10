@@ -128,10 +128,7 @@ export class InternetAccess {
         ? observedMinutes
         : Math.max(
             0,
-            Math.min(
-              observedMinutes,
-              allowanceMinutes - this.consumedMinutes,
-            ),
+            Math.min(observedMinutes, allowanceMinutes - this.consumedMinutes),
           );
 
     return InternetAccess.reconstitute({
@@ -173,10 +170,7 @@ export class InternetAccess {
         ? observedMinutes
         : Math.max(
             0,
-            Math.min(
-              observedMinutes,
-              allowanceMinutes - this.consumedMinutes,
-            ),
+            Math.min(observedMinutes, allowanceMinutes - this.consumedMinutes),
           );
 
     return InternetAccess.reconstitute({
