@@ -133,6 +133,8 @@ describe("FulfilPurchase", () => {
 
       async removeHotspotUser() {},
 
+      async removeActiveHotspotSession() {},
+
       async close() {},
     };
 

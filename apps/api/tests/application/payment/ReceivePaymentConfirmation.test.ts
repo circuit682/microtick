@@ -90,7 +90,13 @@ describe("ReceivePaymentConfirmation", () => {
         return [];
       },
 
+      async getActiveHotspotSessions() {
+        return [];
+      },
+
       async removeHotspotUser() {},
+
+      async removeActiveHotspotSession() {},
 
       async close() {},
     };

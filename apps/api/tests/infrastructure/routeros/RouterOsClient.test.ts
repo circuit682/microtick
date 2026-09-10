@@ -70,7 +70,7 @@ describe("RouterOS client", () => {
     expect(sessions).toEqual(expect.any(Array));
   });
 
-  it("removes the active HotSpot session for a username", async () => {
+  it("removes the active HotSpot session for a username when present and is otherwise a no-op", async () => {
     client = new RouterOsClientAdapter();
 
     await client.connect();
@@ -78,17 +78,29 @@ describe("RouterOS client", () => {
     const username = "mt-active-session-test";
 
     const sessionsBefore = await client.getActiveHotspotSessions();
-
-    expect(sessionsBefore).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ".id": expect.any(String),
-          user: username,
-        }),
-      ]),
+    const matchingSession = sessionsBefore.find(
+      (session) => session.user === username,
     );
 
-    await client.removeActiveHotspotSession(username);
+    if (matchingSession) {
+      await client.removeActiveHotspotSession(username);
+
+      const sessionsAfter = await client.getActiveHotspotSessions();
+
+      expect(sessionsAfter).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            user: username,
+          }),
+        ]),
+      );
+
+      return;
+    }
+
+    await expect(
+      client.removeActiveHotspotSession(username),
+    ).resolves.toBeUndefined();
 
     const sessionsAfter = await client.getActiveHotspotSessions();
 

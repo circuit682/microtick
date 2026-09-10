@@ -13,6 +13,7 @@ describe("access composition", () => {
       getHotspotUsers: async () => [],
       getActiveHotspotSessions: async () => [],
       removeHotspotUser: async () => {},
+      removeActiveHotspotSession: async () => {},
       close: async () => {},
     };
 

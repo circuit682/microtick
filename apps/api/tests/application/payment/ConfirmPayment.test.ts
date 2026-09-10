@@ -127,7 +127,13 @@ describe("ConfirmPayment", () => {
         return [];
       },
 
+      async getActiveHotspotSessions() {
+        return [];
+      },
+
       async removeHotspotUser() {},
+
+      async removeActiveHotspotSession() {},
 
       async close() {},
     };
@@ -142,7 +148,7 @@ describe("ConfirmPayment", () => {
       grantInternetAccess,
       routerOsClient,
     );
-    
+
     const confirmPayment = new ConfirmPayment(
       paymentIntentRepository,
       fulfilPurchase,
