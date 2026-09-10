@@ -70,6 +70,7 @@ describe("RecordInternetAccessUsageFromRouterOs", () => {
     const execute = vi.fn(
       async (_command: {
         purchaseId: string;
+        allowanceMinutes: number;
         connectedAt: Date;
         disconnectedAt: Date;
       }) => ({
@@ -92,6 +93,7 @@ describe("RecordInternetAccessUsageFromRouterOs", () => {
 
     expect(execute).toHaveBeenCalledWith({
       purchaseId: purchase.id,
+      allowanceMinutes: purchase.validity.toMinutes(),
       sessionId: interval.sessionId,
       connectedAt: interval.connectedAt,
       disconnectedAt: interval.disconnectedAt,

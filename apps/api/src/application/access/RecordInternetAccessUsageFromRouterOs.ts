@@ -2,6 +2,8 @@ import type { RecordInternetAccessUsageUseCase } from "@application/access/Recor
 import type { NetworkIdentityRepository } from "@application/ports/NetworkIdentityRepository.js";
 import type { PurchaseRepository } from "@application/ports/PurchaseRepository.js";
 
+import { ConsumptionPolicy } from "@domain";
+
 import type { RouterOsSessionInterval } from "./RouterOsSessionInterval.js";
 
 export class RecordInternetAccessUsageFromRouterOs {
@@ -29,11 +31,17 @@ export class RecordInternetAccessUsageFromRouterOs {
         continue;
       }
 
+      const allowanceMinutes =
+        purchase.consumptionPolicy === ConsumptionPolicy.USAGE
+          ? purchase.validity.toMinutes()
+          : undefined;
+
       await this.recordInternetAccessUsage.execute({
         purchaseId: purchase.id,
         sessionId: interval.sessionId,
         connectedAt: interval.connectedAt,
         disconnectedAt: interval.disconnectedAt,
+        ...(allowanceMinutes === undefined ? {} : { allowanceMinutes }),
       });
     }
   }

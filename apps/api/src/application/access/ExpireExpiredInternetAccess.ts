@@ -28,7 +28,11 @@ export class ExpireExpiredInternetAccess {
     const expired: InternetAccess[] = [];
 
     for (const access of accesses) {
-      if (access.status === InternetAccessStatus.EXPIRED) {
+      if (
+        access.status !== InternetAccessStatus.GRANTED &&
+        access.status !== InternetAccessStatus.PROVISIONING &&
+        access.status !== InternetAccessStatus.ACTIVE
+      ) {
         continue;
       }
 

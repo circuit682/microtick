@@ -36,9 +36,8 @@ export class ActivateInternetAccess implements ActivateInternetAccessUseCase {
     }
 
     if (
-      access.status === InternetAccessStatus.EXPIRED ||
-      access.status === InternetAccessStatus.REVOKED ||
-      access.status === InternetAccessStatus.FAILED
+      access.status !== InternetAccessStatus.PROVISIONING &&
+      access.status !== InternetAccessStatus.ACTIVE
     ) {
       return access;
     }

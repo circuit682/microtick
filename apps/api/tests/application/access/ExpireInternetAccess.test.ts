@@ -68,6 +68,7 @@ describe("ExpireInternetAccess", () => {
         return null;
       },
       findByCustomerId: async () => null,
+      findAll: async () => [access],
     };
 
     const purchaseRepository: PurchaseRepository = {
@@ -91,6 +92,8 @@ describe("ExpireInternetAccess", () => {
       createHotspotUser: async () => {},
       getHotspotUsers: async () => [],
       getActiveHotspotSessions: async () => [],
+      getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
       removeHotspotUser: async () => {},
       removeActiveHotspotSession: async () => {},
       close: async () => {},
@@ -122,6 +125,7 @@ describe("ExpireInternetAccess", () => {
       save: async () => {},
       findByPurchaseId: async () => null,
       findByCustomerId: async () => null,
+      findAll: async () => [],
     };
 
     const purchaseRepository: PurchaseRepository = {
@@ -145,6 +149,8 @@ describe("ExpireInternetAccess", () => {
       createHotspotUser: async () => {},
       getHotspotUsers: async () => [],
       getActiveHotspotSessions: async () => [],
+      getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
       removeHotspotUser: async () => {},
       removeActiveHotspotSession: async () => {},
       close: async () => {},
@@ -209,6 +215,7 @@ describe("ExpireInternetAccess", () => {
       },
       findByPurchaseId: async () => access,
       findByCustomerId: async () => null,
+      findAll: async () => [access],
     };
 
     const purchaseRepository: PurchaseRepository = {
@@ -232,6 +239,8 @@ describe("ExpireInternetAccess", () => {
       createHotspotUser: async () => {},
       getHotspotUsers: async () => [],
       getActiveHotspotSessions: async () => [],
+      getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
       removeHotspotUser: async (username) => {
         removedUsers.push(username);
       },

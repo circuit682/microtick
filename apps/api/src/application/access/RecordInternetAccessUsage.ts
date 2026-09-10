@@ -1,9 +1,10 @@
 import type { InternetAccessRepository } from "@application/ports/InternetAccessRepository.js";
 
-import { InternetAccess } from "@domain";
+import { InternetAccess, InternetAccessStatus } from "@domain";
 
 export interface RecordInternetAccessUsageCommand {
   purchaseId: string;
+  allowanceMinutes?: number;
   sessionId?: string;
   connectedAt: Date;
   disconnectedAt: Date;
@@ -27,13 +28,25 @@ export class RecordInternetAccessUsage implements RecordInternetAccessUsageUseCa
       );
     }
 
+    if (
+      access.status !== InternetAccessStatus.PROVISIONING &&
+      access.status !== InternetAccessStatus.ACTIVE
+    ) {
+      return access;
+    }
+
     const updated = command.sessionId
       ? access.recordSessionUsage(
           command.sessionId,
           command.connectedAt,
           command.disconnectedAt,
+          command.allowanceMinutes,
         )
-      : access.recordUsage(command.connectedAt, command.disconnectedAt);
+      : access.recordUsage(
+          command.connectedAt,
+          command.disconnectedAt,
+          command.allowanceMinutes,
+        );
 
     await this.repository.save(updated);
 

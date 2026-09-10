@@ -205,4 +205,90 @@ describe("ExpireExpiredInternetAccess", () => {
     expect(result[0]?.status).toBe(InternetAccessStatus.EXPIRED);
     expect(savedAccesses[0]?.status).toBe(InternetAccessStatus.EXPIRED);
   });
+
+  it.each([
+    InternetAccessStatus.REVOKED,
+    InternetAccessStatus.FAILED,
+  ])("does not automatically expire %s access", async (status) => {
+    const access = InternetAccess.create({
+      id: `access-${status.toLowerCase()}`,
+      purchaseId: `purchase-${status.toLowerCase()}`,
+      customerId: "customer-001",
+      grantedAt: new Date("2026-01-01T09:00:00Z"),
+      expiresAt: new Date("2026-01-01T10:00:00Z"),
+      status,
+    });
+
+    const purchase = Purchase.create({
+      id: access.purchaseId,
+      paymentIntentId: `payment-${status.toLowerCase()}`,
+      customerId: access.customerId,
+      networkIdentityId: `identity-${status.toLowerCase()}`,
+      planId: `plan-${status.toLowerCase()}`,
+      planName: "Terminal Plan",
+      planPrice: Money.fromMinorUnits(100),
+      validity: Validity.create({ amount: 60, unit: ValidityUnit.MINUTES }),
+      consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
+      serviceLevel: ServiceLevel.create({ name: "Standard" }),
+      accessMethod: AccessMethod.WALL_CLOCK,
+      purchasedAt: new Date("2026-01-01T08:00:00Z"),
+    });
+
+    const identity = NetworkIdentity.create({
+      id: purchase.networkIdentityId,
+      customerId: purchase.customerId,
+      username: `terminal-${status.toLowerCase()}`,
+      credential: "credential",
+      authenticationMethod: AuthenticationMethod.HOTSPOT,
+    });
+
+    const savedAccesses: InternetAccess[] = [];
+    const internetAccessRepository: InternetAccessRepository = {
+      save: async (saved) => {
+        savedAccesses.push(saved);
+      },
+      findByPurchaseId: async () => access,
+      findByCustomerId: async () => null,
+      findAll: async () => [access],
+    };
+    const purchaseRepository: PurchaseRepository = {
+      save: async () => {},
+      findById: async () => purchase,
+      findByPaymentIntentId: async () => null,
+      findByCustomerId: async () => [],
+      findByNetworkIdentityId: async () => purchase,
+    };
+    const networkIdentityRepository: NetworkIdentityRepository = {
+      save: async () => {},
+      findById: async () => identity,
+      findByUsername: async () => identity,
+      findByCustomerId: async () => [identity],
+    };
+    const routerOsClient: RouterOsClient = {
+      connect: async () => {},
+      getSystemIdentity: async () => [],
+      createHotspotUser: async () => {},
+      getHotspotUsers: async () => [],
+      getActiveHotspotSessions: async () => [],
+      getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
+      removeHotspotUser: async () => {},
+      removeActiveHotspotSession: async () => {},
+      close: async () => {},
+    };
+
+    const service = new ExpireExpiredInternetAccess(
+      internetAccessRepository,
+      purchaseRepository,
+      networkIdentityRepository,
+      routerOsClient,
+    );
+
+    const result = await service.execute({
+      now: new Date("2026-01-01T10:05:00Z"),
+    });
+
+    expect(result).toEqual([]);
+    expect(savedAccesses).toHaveLength(0);
+  });
 });

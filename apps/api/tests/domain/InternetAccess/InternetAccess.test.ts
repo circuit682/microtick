@@ -233,6 +233,27 @@ describe("InternetAccess", () => {
       expect(completedObservation.consumedMinutes).toBe(15);
     });
 
+    it("caps a session observation at the allowance", () => {
+      const access = InternetAccess.reconstitute({
+        id: "access-001",
+        purchaseId: "purchase-001",
+        customerId: "customer-001",
+        grantedAt: new Date("2026-01-01T10:00:00Z"),
+        expiresAt: new Date("2026-01-02T10:00:00Z"),
+        status: InternetAccessStatus.ACTIVE,
+        consumedMinutes: 57,
+      });
+
+      const updated = access.recordSessionUsage(
+        "router-session-002",
+        new Date("2026-01-01T10:00:00Z"),
+        new Date("2026-01-01T10:08:00Z"),
+        60,
+      );
+
+      expect(updated.consumedMinutes).toBe(60);
+    });
+
     it("rejects a connection interval that ends before it starts", () => {
       const access = createAccess();
 

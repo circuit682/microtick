@@ -6,6 +6,7 @@ import type { PurchaseRepository } from "../ports/PurchaseRepository.js";
 export interface PurchasePlanRequest {
   paymentIntentId: string;
   customerId: string;
+  networkIdentityId: string;
   plan: Plan;
 }
 
@@ -22,6 +23,7 @@ export class PurchasePlan {
       paymentIntentId: request.paymentIntentId,
 
       customerId: request.customerId,
+      networkIdentityId: request.networkIdentityId,
 
       planId: request.plan.id,
       planName: request.plan.name,

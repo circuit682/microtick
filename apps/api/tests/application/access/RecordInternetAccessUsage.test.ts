@@ -65,6 +65,7 @@ describe("RecordInternetAccessUsage", () => {
         return null;
       },
       findByCustomerId: async () => null,
+      findAll: async () => [access],
     };
 
     const service = new RecordInternetAccessUsage(repository);
@@ -74,6 +75,7 @@ describe("RecordInternetAccessUsage", () => {
 
     const result = await service.execute({
       purchaseId: purchase.id,
+      allowanceMinutes: purchase.validity.toMinutes(),
       connectedAt,
       disconnectedAt,
     });
@@ -83,5 +85,74 @@ describe("RecordInternetAccessUsage", () => {
     expect(savedAccesses).toHaveLength(1);
     expect(savedAccesses[0]?.purchaseId).toBe(access.purchaseId);
     expect(savedAccesses[0]?.consumedMinutes).toBe(12);
+  });
+
+  it("caps recorded usage at the purchased allowance", async () => {
+    const access = InternetAccess.create({
+      id: "access-capped",
+      purchaseId: "purchase-capped",
+      customerId: "customer-001",
+      grantedAt: new Date("2026-01-01T10:00:00Z"),
+      expiresAt: new Date("2026-01-01T11:00:00Z"),
+      status: InternetAccessStatus.ACTIVE,
+      consumedMinutes: 57,
+    });
+    const savedAccesses: InternetAccess[] = [];
+    const repository: InternetAccessRepository = {
+      save: async (saved) => {
+        savedAccesses.push(saved);
+      },
+      findByPurchaseId: async () => access,
+      findByCustomerId: async () => null,
+      findAll: async () => [access],
+    };
+
+    const service = new RecordInternetAccessUsage(repository);
+    const result = await service.execute({
+      purchaseId: access.purchaseId,
+      allowanceMinutes: 60,
+      connectedAt: new Date("2026-01-01T10:00:00Z"),
+      disconnectedAt: new Date("2026-01-01T10:08:00Z"),
+    });
+
+    expect(result.consumedMinutes).toBe(60);
+    expect(savedAccesses[0]?.consumedMinutes).toBe(60);
+  });
+
+  it.each([
+    InternetAccessStatus.GRANTED,
+    InternetAccessStatus.EXPIRED,
+    InternetAccessStatus.REVOKED,
+    InternetAccessStatus.FAILED,
+  ])("does not record usage for %s access", async (status) => {
+    const access = InternetAccess.create({
+      id: "access-terminal",
+      purchaseId: "purchase-terminal",
+      customerId: "customer-001",
+      grantedAt: new Date("2026-01-01T10:00:00Z"),
+      expiresAt: new Date("2026-01-01T11:00:00Z"),
+      status,
+    });
+    const savedAccesses: InternetAccess[] = [];
+    const repository: InternetAccessRepository = {
+      save: async (saved) => {
+        savedAccesses.push(saved);
+      },
+      findByPurchaseId: async () => access,
+      findByCustomerId: async () => null,
+      findAll: async () => [access],
+    };
+
+    const service = new RecordInternetAccessUsage(repository);
+    const result = await service.execute({
+      purchaseId: access.purchaseId,
+      allowanceMinutes: 60,
+      connectedAt: new Date("2026-01-01T10:00:00Z"),
+      disconnectedAt: new Date("2026-01-01T10:12:00Z"),
+    });
+
+    expect(result).toBe(access);
+    expect(result.consumedMinutes).toBe(0);
+    expect(savedAccesses).toHaveLength(0);
   });
 });

@@ -63,6 +63,7 @@ describe("ActivateInternetAccessFromRouterOs", () => {
         },
       ],
       getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
       removeHotspotUser: async () => {},
       removeActiveHotspotSession: async () => {},
       close: async () => {},

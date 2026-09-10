@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { completedIntervalsFromHotspotLogs } from "@application/access/RouterOsHotspotSessionLog.js";
 
 describe("completedIntervalsFromHotspotLogs", () => {
-  it("pairs HotSpot login and logout events into a completed interval", () => {
+  it("interprets CHR UTC timestamps and pairs login/logout events", () => {
     const intervals = completedIntervalsFromHotspotLogs(
       [
         {

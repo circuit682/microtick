@@ -94,6 +94,14 @@ describe("ReceivePaymentConfirmation", () => {
         return [];
       },
 
+      async getHotspotSessionIntervals() {
+        return [];
+      },
+
+      async getCompletedHotspotSessionIntervals() {
+        return [];
+      },
+
       async removeHotspotUser() {},
 
       async removeActiveHotspotSession() {},

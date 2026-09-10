@@ -109,7 +109,11 @@ export class InternetAccess {
     });
   }
 
-  recordUsage(connectedAt: Date, disconnectedAt: Date): InternetAccess {
+  recordUsage(
+    connectedAt: Date,
+    disconnectedAt: Date,
+    allowanceMinutes?: number,
+  ): InternetAccess {
     if (disconnectedAt < connectedAt) {
       throw new ValidationError(
         ErrorCode.ACCESS_INVALID_USAGE,
@@ -117,8 +121,18 @@ export class InternetAccess {
       );
     }
 
-    const usageMinutes =
+    const observedMinutes =
       (disconnectedAt.getTime() - connectedAt.getTime()) / 60000;
+    const usageMinutes =
+      allowanceMinutes === undefined
+        ? observedMinutes
+        : Math.max(
+            0,
+            Math.min(
+              observedMinutes,
+              allowanceMinutes - this.consumedMinutes,
+            ),
+          );
 
     return InternetAccess.reconstitute({
       ...this.props,
@@ -130,6 +144,7 @@ export class InternetAccess {
     sessionId: string,
     connectedAt: Date,
     observedAt: Date,
+    allowanceMinutes?: number,
   ): InternetAccess {
     if (observedAt < connectedAt) {
       throw new ValidationError(
@@ -151,7 +166,18 @@ export class InternetAccess {
       return this;
     }
 
-    const usageMinutes = (observedAt.getTime() - usageStart.getTime()) / 60000;
+    const observedMinutes =
+      (observedAt.getTime() - usageStart.getTime()) / 60000;
+    const usageMinutes =
+      allowanceMinutes === undefined
+        ? observedMinutes
+        : Math.max(
+            0,
+            Math.min(
+              observedMinutes,
+              allowanceMinutes - this.consumedMinutes,
+            ),
+          );
 
     return InternetAccess.reconstitute({
       ...this.props,

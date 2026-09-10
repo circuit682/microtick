@@ -22,14 +22,19 @@ import {
 } from "@domain";
 
 describe("ActivateInternetAccess", () => {
-  it("does not reactivate expired access", async () => {
+  it.each([
+    InternetAccessStatus.GRANTED,
+    InternetAccessStatus.EXPIRED,
+    InternetAccessStatus.REVOKED,
+    InternetAccessStatus.FAILED,
+  ])("does not activate %s access", async (status) => {
     const access = InternetAccess.create({
       id: "access-expired",
       purchaseId: "purchase-expired",
       customerId: "customer-001",
       grantedAt: new Date("2026-01-01T10:00:00Z"),
       expiresAt: new Date("2026-01-01T11:00:00Z"),
-      status: InternetAccessStatus.EXPIRED,
+      status,
     });
 
     const purchase = Purchase.create({
@@ -57,7 +62,9 @@ describe("ActivateInternetAccess", () => {
 
     const savedAccesses: InternetAccess[] = [];
     const internetAccessRepository: InternetAccessRepository = {
-      save: async (saved) => savedAccesses.push(saved),
+      save: async (saved) => {
+        savedAccesses.push(saved);
+      },
       findByPurchaseId: async () => access,
       findByCustomerId: async () => null,
       findAll: async () => [access],
@@ -100,7 +107,7 @@ describe("ActivateInternetAccess", () => {
       customerId: access.customerId,
     });
 
-    expect(result.status).toBe(InternetAccessStatus.EXPIRED);
+    expect(result.status).toBe(status);
     expect(savedAccesses).toHaveLength(0);
   });
 
@@ -203,6 +210,7 @@ describe("ActivateInternetAccess", () => {
       },
 
       findByCustomerId: async () => null,
+      findAll: async () => [accessOne, accessTwo],
     };
 
     const networkIdentityRepository: NetworkIdentityRepository = {
@@ -250,6 +258,9 @@ describe("ActivateInternetAccess", () => {
           user: identityOne.username,
         },
       ],
+
+      getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
 
       removeHotspotUser: async () => {},
       removeActiveHotspotSession: async () => {},
@@ -372,6 +383,7 @@ describe("ActivateInternetAccess", () => {
       },
 
       findByCustomerId: async () => null,
+      findAll: async () => [accessOne, accessTwo],
     };
 
     const networkIdentityRepository: NetworkIdentityRepository = {
@@ -451,6 +463,9 @@ describe("ActivateInternetAccess", () => {
           user: identityOne.username,
         },
       ],
+
+      getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
 
       removeHotspotUser: async () => {},
       removeActiveHotspotSession: async () => {},

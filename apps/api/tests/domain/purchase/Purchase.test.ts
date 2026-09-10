@@ -33,6 +33,7 @@ describe("Purchase", () => {
       paymentIntentId: "payment-intent-1",
       id: "purchase-001",
       customerId: "customer-001",
+      networkIdentityId: "identity-001",
 
       planId: "quiky",
       planName: "Quiky",
@@ -125,6 +126,7 @@ describe("Purchase", () => {
       paymentIntentId: "payment-intent-1",
       id: "purchase-001",
       customerId: "customer-001",
+      networkIdentityId: "identity-001",
 
       planId: "daily",
       planName: "Daily",
