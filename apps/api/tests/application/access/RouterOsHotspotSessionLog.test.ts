@@ -23,8 +23,7 @@ describe("completedIntervalsFromHotspotLogs", () => {
 
     expect(intervals).toEqual([
       {
-        sessionId:
-          "hotspot:mt-active-session-test:2026-09-10T14:27:19.000Z",
+        sessionId: "hotspot:mt-active-session-test:2026-09-10T14:27:19.000Z",
         username: "mt-active-session-test",
         connectedAt: new Date("2026-09-10T14:27:19Z"),
         disconnectedAt: new Date("2026-09-10T14:54:15Z"),

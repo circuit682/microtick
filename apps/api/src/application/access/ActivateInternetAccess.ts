@@ -3,7 +3,7 @@ import type { NetworkIdentityRepository } from "@application/ports/NetworkIdenti
 import type { PurchaseRepository } from "@application/ports/PurchaseRepository.js";
 import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 
-import { InternetAccess } from "@domain";
+import { InternetAccess, InternetAccessStatus } from "@domain";
 
 export interface ActivateInternetAccessCommand {
   purchaseId: string;
@@ -33,6 +33,14 @@ export class ActivateInternetAccess implements ActivateInternetAccessUseCase {
       throw new Error(
         `Internet access for purchase '${command.purchaseId}' was not found.`,
       );
+    }
+
+    if (
+      access.status === InternetAccessStatus.EXPIRED ||
+      access.status === InternetAccessStatus.REVOKED ||
+      access.status === InternetAccessStatus.FAILED
+    ) {
+      return access;
     }
 
     const purchase = await this.purchaseRepository.findById(command.purchaseId);

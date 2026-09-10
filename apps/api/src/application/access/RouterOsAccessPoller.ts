@@ -1,5 +1,6 @@
 export class RouterOsAccessPoller {
   private timer: ReturnType<typeof setInterval> | null = null;
+  private running = false;
 
   constructor(
     private readonly execute: () => Promise<void>,
@@ -12,8 +13,22 @@ export class RouterOsAccessPoller {
     }
 
     this.timer = setInterval(() => {
-      void this.execute();
+      void this.runOnce();
     }, this.intervalMs);
+  }
+
+  private async runOnce(): Promise<void> {
+    if (this.running) {
+      return;
+    }
+
+    this.running = true;
+
+    try {
+      await this.execute();
+    } finally {
+      this.running = false;
+    }
   }
 
   stop(): void {

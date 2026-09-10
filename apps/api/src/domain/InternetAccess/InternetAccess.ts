@@ -144,7 +144,10 @@ export class InternetAccess {
         ? previousObservation
         : connectedAt;
 
-    if (previousObservation !== undefined && observedAt <= previousObservation) {
+    if (
+      previousObservation !== undefined &&
+      observedAt <= previousObservation
+    ) {
       return this;
     }
 

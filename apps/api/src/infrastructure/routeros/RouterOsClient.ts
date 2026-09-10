@@ -119,7 +119,9 @@ export class RouterOsClientAdapter implements RouterOsClient {
     });
   }
 
-  async getCompletedHotspotSessionIntervals(): Promise<RouterOsSessionInterval[]> {
+  async getCompletedHotspotSessionIntervals(): Promise<
+    RouterOsSessionInterval[]
+  > {
     const entries = (await this.client.write(
       "/log/print",
     )) as RouterOsHotspotLogEntry[];

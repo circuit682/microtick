@@ -22,6 +22,88 @@ import {
 } from "@domain";
 
 describe("ActivateInternetAccess", () => {
+  it("does not reactivate expired access", async () => {
+    const access = InternetAccess.create({
+      id: "access-expired",
+      purchaseId: "purchase-expired",
+      customerId: "customer-001",
+      grantedAt: new Date("2026-01-01T10:00:00Z"),
+      expiresAt: new Date("2026-01-01T11:00:00Z"),
+      status: InternetAccessStatus.EXPIRED,
+    });
+
+    const purchase = Purchase.create({
+      id: access.purchaseId,
+      paymentIntentId: "payment-intent-expired",
+      customerId: access.customerId,
+      networkIdentityId: "identity-expired",
+      planId: "plan-expired",
+      planName: "Expired Plan",
+      planPrice: Money.fromMinorUnits(100),
+      validity: Validity.create({ amount: 60, unit: ValidityUnit.MINUTES }),
+      consumptionPolicy: ConsumptionPolicy.CONTINUOUS,
+      serviceLevel: ServiceLevel.create({ name: "Standard" }),
+      accessMethod: AccessMethod.WALL_CLOCK,
+      purchasedAt: new Date("2026-01-01T09:00:00Z"),
+    });
+
+    const identity = NetworkIdentity.create({
+      id: purchase.networkIdentityId,
+      customerId: purchase.customerId,
+      username: "expired-user",
+      credential: "credential",
+      authenticationMethod: AuthenticationMethod.HOTSPOT,
+    });
+
+    const savedAccesses: InternetAccess[] = [];
+    const internetAccessRepository: InternetAccessRepository = {
+      save: async (saved) => savedAccesses.push(saved),
+      findByPurchaseId: async () => access,
+      findByCustomerId: async () => null,
+      findAll: async () => [access],
+    };
+    const purchaseRepository: PurchaseRepository = {
+      save: async () => {},
+      findById: async () => purchase,
+      findByPaymentIntentId: async () => null,
+      findByCustomerId: async () => [purchase],
+      findByNetworkIdentityId: async () => purchase,
+    };
+    const networkIdentityRepository: NetworkIdentityRepository = {
+      save: async () => {},
+      findById: async () => identity,
+      findByUsername: async () => identity,
+      findByCustomerId: async () => [identity],
+    };
+    const routerOsClient: RouterOsClient = {
+      connect: async () => {},
+      getSystemIdentity: async () => [],
+      createHotspotUser: async () => {},
+      getHotspotUsers: async () => [],
+      getActiveHotspotSessions: async () => [{ user: identity.username }],
+      getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
+      removeHotspotUser: async () => {},
+      removeActiveHotspotSession: async () => {},
+      close: async () => {},
+    };
+
+    const service = new ActivateInternetAccess(
+      internetAccessRepository,
+      networkIdentityRepository,
+      purchaseRepository,
+      routerOsClient,
+    );
+
+    const result = await service.execute({
+      purchaseId: access.purchaseId,
+      customerId: access.customerId,
+    });
+
+    expect(result.status).toBe(InternetAccessStatus.EXPIRED);
+    expect(savedAccesses).toHaveLength(0);
+  });
+
   it("activates only the internet access belonging to the network identity that has an active HotSpot session", async () => {
     const accessOne = InternetAccess.create({
       id: "access-001",

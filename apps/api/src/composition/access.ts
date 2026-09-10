@@ -64,12 +64,12 @@ export function createRouterOsAccessPoller(
   );
 
   return new RouterOsAccessPoller(async () => {
-    await activateInternetAccessFromRouterOs.execute();
     const intervals = await routerOsClient.getHotspotSessionIntervals();
     await recordInternetAccessUsageFromRouterOs.execute(intervals);
     const completedIntervals =
       await routerOsClient.getCompletedHotspotSessionIntervals();
     await recordInternetAccessUsageFromRouterOs.execute(completedIntervals);
     await expireExpiredInternetAccess.execute({ now: new Date() });
+    await activateInternetAccessFromRouterOs.execute();
   }, 1000);
 }
