@@ -89,6 +89,7 @@ describe("ExpireExpiredInternetAccess", () => {
       getHotspotUsers: async () => [],
       getActiveHotspotSessions: async () => [],
       getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
       removeHotspotUser: async (username) => {
         removedUsers.push(username);
       },
@@ -183,6 +184,7 @@ describe("ExpireExpiredInternetAccess", () => {
       getHotspotUsers: async () => [],
       getActiveHotspotSessions: async () => [],
       getHotspotSessionIntervals: async () => [],
+      getCompletedHotspotSessionIntervals: async () => [],
       removeHotspotUser: async () => {},
       removeActiveHotspotSession: async () => {},
       close: async () => {},

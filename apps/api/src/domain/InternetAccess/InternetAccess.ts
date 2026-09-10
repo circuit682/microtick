@@ -138,17 +138,13 @@ export class InternetAccess {
       );
     }
 
-    const isSameSession = this.props.usageSessionId === sessionId;
-    const previousObservation = isSameSession
-      ? this.props.usageRecordedThrough
-      : undefined;
-    const usageStart = previousObservation ?? connectedAt;
+    const previousObservation = this.props.usageRecordedThrough;
+    const usageStart =
+      previousObservation !== undefined && connectedAt < previousObservation
+        ? previousObservation
+        : connectedAt;
 
-    if (
-      isSameSession &&
-      previousObservation !== undefined &&
-      observedAt <= previousObservation
-    ) {
+    if (previousObservation !== undefined && observedAt <= previousObservation) {
       return this;
     }
 

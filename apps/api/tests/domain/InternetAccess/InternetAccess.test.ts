@@ -215,6 +215,24 @@ describe("InternetAccess", () => {
       expect(duplicate).toBe(second);
     });
 
+    it("does not double-count a completed log interval after active polling", () => {
+      const access = createAccess();
+
+      const activeObservation = access.recordSessionUsage(
+        "router-active-id",
+        new Date("2026-01-01T10:00:00Z"),
+        new Date("2026-01-01T10:12:00Z"),
+      );
+
+      const completedObservation = activeObservation.recordSessionUsage(
+        "hotspot:user:2026-01-01T10:00:00.000Z",
+        new Date("2026-01-01T10:00:00Z"),
+        new Date("2026-01-01T10:15:00Z"),
+      );
+
+      expect(completedObservation.consumedMinutes).toBe(15);
+    });
+
     it("rejects a connection interval that ends before it starts", () => {
       const access = createAccess();
 

@@ -67,6 +67,9 @@ export function createRouterOsAccessPoller(
     await activateInternetAccessFromRouterOs.execute();
     const intervals = await routerOsClient.getHotspotSessionIntervals();
     await recordInternetAccessUsageFromRouterOs.execute(intervals);
+    const completedIntervals =
+      await routerOsClient.getCompletedHotspotSessionIntervals();
+    await recordInternetAccessUsageFromRouterOs.execute(completedIntervals);
     await expireExpiredInternetAccess.execute({ now: new Date() });
   }, 1000);
 }

@@ -13,6 +13,8 @@ export interface RouterOsClient {
 
   getHotspotSessionIntervals(): Promise<RouterOsSessionInterval[]>;
 
+  getCompletedHotspotSessionIntervals(): Promise<RouterOsSessionInterval[]>;
+
   removeHotspotUser(username: string): Promise<void>;
 
   removeActiveHotspotSession(username: string): Promise<void>;

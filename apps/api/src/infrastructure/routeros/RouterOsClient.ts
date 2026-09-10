@@ -3,6 +3,10 @@ import { MikrotikAPI } from "@fibercom/routeros-api";
 import { env } from "@config/env.js";
 
 import type { RouterOsSessionInterval } from "@application/access/RouterOsSessionInterval.js";
+import {
+  completedIntervalsFromHotspotLogs,
+  type RouterOsHotspotLogEntry,
+} from "@application/access/RouterOsHotspotSessionLog.js";
 import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 
 function parseRouterOsUptimeToMs(uptime: string): number {
@@ -113,6 +117,14 @@ export class RouterOsClientAdapter implements RouterOsClient {
 
       return Number.isFinite(interval.connectedAt.getTime()) ? [interval] : [];
     });
+  }
+
+  async getCompletedHotspotSessionIntervals(): Promise<RouterOsSessionInterval[]> {
+    const entries = (await this.client.write(
+      "/log/print",
+    )) as RouterOsHotspotLogEntry[];
+
+    return completedIntervalsFromHotspotLogs(entries, new Date());
   }
 
   async removeHotspotUser(username: string): Promise<void> {
