@@ -9,7 +9,11 @@ import { createRouterOsAccessPoller } from "./composition/access.js";
 
 import { createPaymentRoutes } from "./http/payment/routes/paymentRoutes.js";
 
-import { createGetCustomerController } from "./composition/customer.js";
+import {
+  createGetCustomerController,
+  createGetCustomerInternetAccessController,
+  createGetCustomerPurchasesController,
+} from "./composition/customer.js";
 
 import {
   createCreateSessionController,
@@ -69,6 +73,12 @@ export function createServer(
 
   const getCustomerController = createGetCustomerController();
 
+  const getCustomerInternetAccessController =
+    createGetCustomerInternetAccessController();
+
+  const getCustomerPurchasesController =
+    createGetCustomerPurchasesController();
+
   const createSessionController = createCreateSessionController();
 
   const getActiveSessionController = createGetActiveSessionController();
@@ -87,9 +97,16 @@ export function createServer(
     },
   );
 
-  server.register(createCustomerRoutes(getCustomerController), {
-    prefix: "/customers",
-  });
+  server.register(
+    createCustomerRoutes(
+      getCustomerController,
+      getCustomerInternetAccessController,
+      getCustomerPurchasesController,
+    ),
+    {
+      prefix: "/customers",
+    },
+  );
 
   server.register(
     createSessionRoutes(createSessionController, getActiveSessionController),
