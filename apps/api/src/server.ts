@@ -76,8 +76,7 @@ export function createServer(
   const getCustomerInternetAccessController =
     createGetCustomerInternetAccessController();
 
-  const getCustomerPurchasesController =
-    createGetCustomerPurchasesController();
+  const getCustomerPurchasesController = createGetCustomerPurchasesController();
 
   const createSessionController = createCreateSessionController();
 

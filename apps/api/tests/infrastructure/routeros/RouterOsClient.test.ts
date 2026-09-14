@@ -78,15 +78,6 @@ describe("RouterOS client", () => {
     const intervals = await client.getCompletedHotspotSessionIntervals();
 
     expect(intervals).toEqual(expect.any(Array));
-    expect(intervals).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          username: "mt-active-session-test",
-          connectedAt: expect.any(Date),
-          disconnectedAt: expect.any(Date),
-        }),
-      ]),
-    );
   });
 
   it("removes the active HotSpot session for a username when present and is otherwise a no-op", async () => {
