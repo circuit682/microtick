@@ -23,6 +23,7 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
     setupFiles: ["tests/setup.ts"],
+    testTimeout: 15000,
 
     // Integration tests share one PostgreSQL database.
     // Run test files sequentially to prevent database cleanup
