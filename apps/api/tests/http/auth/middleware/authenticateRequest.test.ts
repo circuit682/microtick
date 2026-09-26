@@ -1,14 +1,45 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { env } from "@config/env.js";
 import { authenticateRequest } from "@http/auth/middleware/authenticateRequest.js";
 import { JwtAccessTokenService } from "@infrastructure/auth/JwtAccessTokenService.js";
+import { prisma } from "@infrastructure/database/prisma.js";
+
+import { SessionStatus } from "@domain";
 
 describe("authenticateRequest", () => {
   const accessTokenService = new JwtAccessTokenService({
     secret: env.security.jwtSecret,
     issuer: env.security.jwtIssuer,
     audience: env.security.jwtAudience,
+  });
+
+  beforeEach(async () => {
+    await prisma.session.deleteMany();
+    await prisma.customer.deleteMany();
+
+    // Shared active customer/session backing the three "valid token"
+    // cases below, all of which use the same customerId/sessionId.
+    await prisma.customer.create({
+      data: {
+        id: "customer-001",
+        phoneNumber: "0712345678",
+      },
+    });
+
+    await prisma.session.create({
+      data: {
+        id: "session-001",
+        customerId: "customer-001",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        status: SessionStatus.ACTIVE,
+      },
+    });
+  });
+
+  afterEach(async () => {
+    await prisma.session.deleteMany();
+    await prisma.customer.deleteMany();
   });
 
   function createReply() {
@@ -145,6 +176,57 @@ describe("authenticateRequest", () => {
     expect(reply.code).toHaveBeenCalledWith(403);
     expect(reply.send).toHaveBeenCalledWith({
       message: "You are not authorized to access this customer.",
+    });
+  });
+
+  it("rejects a request whose session has been revoked", async () => {
+    await prisma.session.create({
+      data: {
+        id: "session-revoked-001",
+        customerId: "customer-001",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        status: SessionStatus.REVOKED,
+      },
+    });
+
+    const token = await accessTokenService.issue({
+      customerId: "customer-001",
+      sessionId: "session-revoked-001",
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
+
+    const request = {
+      headers: { authorization: `Bearer ${token}` },
+      params: {},
+    };
+    const reply = createReply();
+
+    await authenticateRequest(request as never, reply as never);
+
+    expect(reply.code).toHaveBeenCalledWith(401);
+    expect(reply.send).toHaveBeenCalledWith({
+      message: "Session is no longer active.",
+    });
+  });
+
+  it("rejects a request whose session does not exist", async () => {
+    const token = await accessTokenService.issue({
+      customerId: "customer-001",
+      sessionId: "session-missing-001",
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
+
+    const request = {
+      headers: { authorization: `Bearer ${token}` },
+      params: {},
+    };
+    const reply = createReply();
+
+    await authenticateRequest(request as never, reply as never);
+
+    expect(reply.code).toHaveBeenCalledWith(401);
+    expect(reply.send).toHaveBeenCalledWith({
+      message: "Session is no longer active.",
     });
   });
 });

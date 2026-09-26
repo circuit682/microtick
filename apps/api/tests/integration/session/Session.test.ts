@@ -33,6 +33,20 @@ describe("Customer sessions", () => {
       },
     });
 
+    // Bootstrap session backing this test's own auth token. Required
+    // since authenticateRequest now verifies the token's sessionId
+    // against a real, ACTIVE Session row (see authenticateRequest.ts).
+    // This is distinct from the NEW session the test actually creates
+    // and asserts on below.
+    await prisma.session.create({
+      data: {
+        id: "session-auth-test-001",
+        customerId: "customer-session-001",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        status: "ACTIVE",
+      },
+    });
+
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     const accessTokenService = createAccessTokenService();
@@ -128,37 +142,6 @@ describe("Customer sessions", () => {
     await server.close();
   });
 
-  it("returns 404 when the customer has no active session", async () => {
-    const customer = await prisma.customer.create({
-      data: {
-        id: "customer-session-003",
-        phoneNumber: "0700000000",
-      },
-    });
-
-    const accessTokenService = createAccessTokenService();
-
-    const accessToken = await accessTokenService.issue({
-      customerId: customer.id,
-      sessionId: "session-auth-test-003",
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-    });
-
-    const server = createServer();
-
-    const response = await server.inject({
-      method: "GET",
-      url: `/customers/${customer.id}/session`,
-      headers: {
-        authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    expect(response.statusCode).toBe(404);
-
-    await server.close();
-  });
-
   it("rejects access to another customer's session", async () => {
     const customerA = await prisma.customer.create({
       data: {
@@ -180,6 +163,17 @@ describe("Customer sessions", () => {
       data: {
         id: "session-http-002",
         customerId: customerB.id,
+        expiresAt,
+        status: "ACTIVE",
+      },
+    });
+
+    // Bootstrap session backing customerA's own auth token, for the
+    // same reason as the first test above.
+    await prisma.session.create({
+      data: {
+        id: "session-auth-test-004",
+        customerId: customerA.id,
         expiresAt,
         status: "ACTIVE",
       },
