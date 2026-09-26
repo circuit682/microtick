@@ -33,7 +33,7 @@ export class PlanMapper {
       consumptionPolicy,
 
       serviceLevel: ServiceLevel.create({
-        name: "Residential",
+        name: plan.serviceLevel,
       }),
 
       accessMethod:
@@ -51,6 +51,7 @@ export class PlanMapper {
     priceMinor: number;
     type: PlanType;
     allowanceMinutes: number;
+    serviceLevel: string;
     active: boolean;
   } {
     return {
@@ -67,6 +68,8 @@ export class PlanMapper {
           : PlanType.USAGE,
 
       allowanceMinutes: plan.validity.toMinutes(),
+
+      serviceLevel: plan.serviceLevel.name,
 
       active: plan.active,
     };

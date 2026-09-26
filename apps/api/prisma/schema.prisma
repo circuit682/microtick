@@ -18,6 +18,7 @@ model Plan {
   priceMinor       Int
   type             PlanType
   allowanceMinutes Int
+  serviceLevel     String          @default("Standard")
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   active           Boolean         @default(true)
@@ -60,12 +61,13 @@ model Purchase {
   networkIdentityId String @unique
 
   planId           String
-  plan             Plan      @relation(fields: [planId], references: [id])
+  plan              Plan      @relation(fields: [planId], references: [id])
 
   planName         String
   planPriceMinor   Int
   planType         PlanType
   allowanceMinutes Int
+  serviceLevel     String    @default("Standard")
 
   purchasedAt      DateTime
 

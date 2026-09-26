@@ -48,7 +48,7 @@ describe("PrismaPurchaseRepository", () => {
       consumptionPolicy: ConsumptionPolicy.USAGE,
 
       serviceLevel: ServiceLevel.create({
-        name: "Residential",
+        name: "Business",
       }),
 
       accessMethod: AccessMethod.SESSION,
@@ -85,5 +85,15 @@ describe("PrismaPurchaseRepository", () => {
     expect(stored).not.toBeNull();
     expect(stored?.id).toBe(purchase.id);
     expect(stored?.networkIdentityId).toBe("identity-001");
+  });
+
+  it("saves and retrieves the purchase's service level", async () => {
+    const purchase = await createPurchase();
+
+    await repository.save(purchase);
+
+    const stored = await repository.findById(purchase.id);
+
+    expect(stored?.serviceLevel.name).toBe("Business");
   });
 });

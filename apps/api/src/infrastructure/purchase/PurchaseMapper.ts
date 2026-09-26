@@ -38,7 +38,7 @@ export class PurchaseMapper {
           : ConsumptionPolicy.USAGE,
 
       serviceLevel: ServiceLevel.create({
-        name: "Default",
+        name: purchase.serviceLevel,
       }),
 
       accessMethod:
@@ -60,6 +60,7 @@ export class PurchaseMapper {
     planPriceMinor: number;
     planType: PlanType;
     allowanceMinutes: number;
+    serviceLevel: string;
     purchasedAt: Date;
   } {
     return {
@@ -82,6 +83,8 @@ export class PurchaseMapper {
           : PlanType.USAGE,
 
       allowanceMinutes: purchase.validity.toMinutes(),
+
+      serviceLevel: purchase.serviceLevel.name,
 
       purchasedAt: purchase.purchasedAt,
     };

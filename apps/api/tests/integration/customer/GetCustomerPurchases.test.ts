@@ -137,12 +137,7 @@ describe("GET /customers/:customerId/purchases", () => {
         planPriceMinor: 100,
         validity: { amount: 60, unit: ValidityUnit.MINUTES },
         consumptionPolicy: purchase.consumptionPolicy,
-        // PurchaseMapper.toDomain() hardcodes serviceLevel to "Default" on
-        // every read — the Purchase table has no serviceLevel column, and
-        // toPersistence() never writes one. Whatever ServiceLevel is set at
-        // creation (below: "Residential") is silently dropped on save. This
-        // is confirmed, current system behavior, not a test artifact.
-        serviceLevel: "Default",
+        serviceLevel: "Residential",
         accessMethod: purchase.accessMethod,
         purchasedAt: purchase.purchasedAt.toISOString(),
       },
