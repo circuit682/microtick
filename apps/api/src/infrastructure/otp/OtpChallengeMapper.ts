@@ -9,6 +9,7 @@ export class OtpChallengeMapper {
       phoneNumber: challenge.phoneNumber,
       codeHash: challenge.codeHash,
       expiresAt: challenge.expiresAt,
+      consumedAt: challenge.consumedAt,
     };
   }
 
@@ -17,12 +18,14 @@ export class OtpChallengeMapper {
     phoneNumber: string;
     codeHash: string;
     expiresAt: Date;
+    consumedAt: Date | null;
   } {
     return {
       id: challenge.id,
       phoneNumber: challenge.phoneNumber,
       codeHash: challenge.codeHash,
       expiresAt: challenge.expiresAt,
+      consumedAt: challenge.consumedAt ?? null,
     };
   }
 }

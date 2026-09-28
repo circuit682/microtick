@@ -157,6 +157,7 @@ model OtpChallenge {
   phoneNumber String
   codeHash    String
   expiresAt   DateTime
+  consumedAt  DateTime?
 
   @@index([phoneNumber])
   @@index([phoneNumber, expiresAt])

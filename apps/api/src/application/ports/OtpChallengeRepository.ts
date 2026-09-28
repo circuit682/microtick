@@ -3,6 +3,7 @@ export interface OtpChallenge {
   phoneNumber: string;
   codeHash: string;
   expiresAt: Date;
+  consumedAt?: Date | null;
 }
 
 export interface OtpChallengeRepository {

@@ -27,6 +27,10 @@ export class VerifyOtpCode implements VerifyOtpCodeUseCase {
       return false;
     }
 
+    if (challenge.consumedAt !== null && challenge.consumedAt !== undefined) {
+      return false;
+    }
+
     if (challenge.phoneNumber !== command.phoneNumber) {
       return false;
     }
@@ -35,10 +39,21 @@ export class VerifyOtpCode implements VerifyOtpCodeUseCase {
       return false;
     }
 
-    return this.codeHasher.verify(
+    const verified = this.codeHasher.verify(
       challenge.id,
       command.code,
       challenge.codeHash,
     );
+
+    if (!verified) {
+      return false;
+    }
+
+    await this.challengeRepository.save({
+      ...challenge,
+      consumedAt: command.now,
+    });
+
+    return true;
   }
 }

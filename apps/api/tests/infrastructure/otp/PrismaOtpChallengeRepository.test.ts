@@ -23,7 +23,10 @@ describe("PrismaOtpChallengeRepository", () => {
     const result = await repository.findById(challenge.id);
 
     expect(result).not.toBeNull();
-    expect(result).toEqual(challenge);
+    expect(result).toEqual({
+      ...challenge,
+      consumedAt: null,
+    });
   });
 
   it("should return null when the challenge does not exist", async () => {
@@ -53,7 +56,10 @@ describe("PrismaOtpChallengeRepository", () => {
     const result = await repository.findLatestByPhoneNumber("0712345679");
 
     expect(result).not.toBeNull();
-    expect(result).toEqual(newerChallenge);
+    expect(result).toEqual({
+      ...newerChallenge,
+      consumedAt: null,
+    });
   });
 
   it("should return null when the phone number has no challenges", async () => {
@@ -80,6 +86,26 @@ describe("PrismaOtpChallengeRepository", () => {
       phoneNumber: challenge.phoneNumber,
       codeHash: challenge.codeHash,
       expiresAt: challenge.expiresAt,
+      consumedAt: null,
     });
+  });
+
+  it("should save and retrieve a consumed challenge's consumedAt value", async () => {
+    const consumedAt = new Date("2026-08-16T12:03:00Z");
+
+    const challenge = {
+      id: "challenge-prisma-005",
+      phoneNumber: "0712345680",
+      codeHash: "hash-prisma-005",
+      expiresAt: new Date("2026-08-16T12:05:00Z"),
+      consumedAt,
+    };
+
+    await repository.save(challenge);
+
+    const result = await repository.findById(challenge.id);
+
+    expect(result).not.toBeNull();
+    expect(result?.consumedAt).toEqual(consumedAt);
   });
 });

@@ -1,20 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import type { OtpChallenge } from "@application/ports/OtpChallengeRepository.js";
 import type { OtpChallengeRepository } from "@application/ports/OtpChallengeRepository.js";
 import type { OtpCodeHasher } from "@application/ports/OtpCodeHasher.js";
 import { VerifyOtpCode } from "@application/otp/VerifyOtpCode.js";
 
 describe("VerifyOtpCode", () => {
   function createRepository(
-    challenge: {
-      id: string;
-      phoneNumber: string;
-      codeHash: string;
-      expiresAt: Date;
-    } | null,
-  ): OtpChallengeRepository {
+    challenge: OtpChallenge | null,
+  ): OtpChallengeRepository & { save: ReturnType<typeof vi.fn> } {
     return {
-      save: async () => {},
+      save: vi.fn(async () => {}),
       findById: async () => challenge,
       findLatestByPhoneNumber: async () => challenge,
     };
@@ -156,5 +152,57 @@ describe("VerifyOtpCode", () => {
     });
 
     expect(result).toBe(false);
+  });
+
+  it("should reject a challenge that has already been consumed, even with the correct code", async () => {
+    const challenge = {
+      id: "challenge-006",
+      phoneNumber: "0712345678",
+      codeHash: "stored-hash",
+      expiresAt: new Date("2026-08-16T19:00:00Z"),
+      consumedAt: new Date("2026-08-16T18:50:00Z"),
+    };
+
+    const repository = createRepository(challenge);
+
+    const service = new VerifyOtpCode(repository, createHasher(true));
+
+    const result = await service.execute({
+      challengeId: challenge.id,
+      phoneNumber: challenge.phoneNumber,
+      code: "123456",
+      now: new Date("2026-08-16T18:55:00Z"),
+    });
+
+    expect(result).toBe(false);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it("should mark the challenge as consumed after a successful verification", async () => {
+    const challenge = {
+      id: "challenge-007",
+      phoneNumber: "0712345678",
+      codeHash: "stored-hash",
+      expiresAt: new Date("2026-08-16T19:00:00Z"),
+    };
+
+    const repository = createRepository(challenge);
+
+    const service = new VerifyOtpCode(repository, createHasher(true));
+
+    const now = new Date("2026-08-16T18:55:00Z");
+
+    const result = await service.execute({
+      challengeId: challenge.id,
+      phoneNumber: challenge.phoneNumber,
+      code: "123456",
+      now,
+    });
+
+    expect(result).toBe(true);
+    expect(repository.save).toHaveBeenCalledWith({
+      ...challenge,
+      consumedAt: now,
+    });
   });
 });
