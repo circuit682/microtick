@@ -49,4 +49,9 @@ export class PrismaSessionRepository implements SessionRepository {
 
     return SessionMapper.toDomain(session);
   }
+
+  async findAll(): Promise<Session[]> {
+    const sessions = await prisma.session.findMany();
+    return sessions.map((session) => SessionMapper.toDomain(session));
+  }
 }

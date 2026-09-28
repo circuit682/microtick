@@ -145,4 +145,42 @@ describe("PrismaSessionRepository", () => {
     expect(stored).not.toBeNull();
     expect(stored?.id).toBe(newer.id);
   });
+
+  it("should return every session regardless of status", async () => {
+    const customer = await createCustomer();
+
+    await repository.save(
+      createSession(customer.id, {
+        id: "session-active",
+        status: SessionStatus.ACTIVE,
+      }),
+    );
+    await repository.save(
+      createSession(customer.id, {
+        id: "session-expired",
+        status: SessionStatus.EXPIRED,
+      }),
+    );
+    await repository.save(
+      createSession(customer.id, {
+        id: "session-revoked",
+        status: SessionStatus.REVOKED,
+      }),
+    );
+
+    const all = await repository.findAll();
+
+    const byId = new Map(all.map((session) => [session.id, session.status]));
+
+    expect(all).toHaveLength(3);
+    expect(byId.get("session-active")).toBe(SessionStatus.ACTIVE);
+    expect(byId.get("session-expired")).toBe(SessionStatus.EXPIRED);
+    expect(byId.get("session-revoked")).toBe(SessionStatus.REVOKED);
+  });
+
+  it("should return an empty list when there are no sessions", async () => {
+    const all = await repository.findAll();
+
+    expect(all).toEqual([]);
+  });
 });

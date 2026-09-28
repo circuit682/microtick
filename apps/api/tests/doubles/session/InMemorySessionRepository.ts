@@ -22,4 +22,8 @@ export class InMemorySessionRepository implements SessionRepository {
 
     return sessions[0] ?? null;
   }
+
+  async findAll(): Promise<Session[]> {
+    return [...this.sessions.values()];
+  }
 }
