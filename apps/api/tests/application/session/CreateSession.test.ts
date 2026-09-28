@@ -43,4 +43,60 @@ describe("CreateSession", () => {
 
     vi.useRealTimers();
   });
+
+  it("should create a session whose expiration is exactly 30 days away", async () => {
+    const repository = new InMemorySessionRepository();
+
+    const identifierGenerator = new UlidIdentifierGenerator();
+
+    const createdAt = new Date("2026-08-16T12:00:00Z");
+    const expiresAt = new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    vi.useFakeTimers();
+    vi.setSystemTime(createdAt);
+
+    try {
+      const createSession = new CreateSession(repository, identifierGenerator);
+
+      const session = await createSession.execute({
+        customerId: "customer-002",
+        expiresAt,
+      });
+
+      expect(session.expiresAt).toEqual(expiresAt);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("should reject a session expiration beyond the 30-day maximum", async () => {
+    const repository = new InMemorySessionRepository();
+
+    const identifierGenerator = new UlidIdentifierGenerator();
+
+    const createdAt = new Date("2026-08-16T12:00:00Z");
+    const expiresAt = new Date(
+      createdAt.getTime() + 30 * 24 * 60 * 60 * 1000 + 1,
+    );
+
+    vi.useFakeTimers();
+    vi.setSystemTime(createdAt);
+
+    try {
+      const createSession = new CreateSession(repository, identifierGenerator);
+
+      await expect(
+        createSession.execute({
+          customerId: "customer-003",
+          expiresAt,
+        }),
+      ).rejects.toThrow("Session expiration cannot exceed 30 days.");
+
+      const stored = await repository.findActiveByCustomerId("customer-003");
+
+      expect(stored).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
