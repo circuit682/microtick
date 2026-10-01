@@ -1,4 +1,4 @@
-export class RouterOsAccessPoller {
+export class IntervalPoller {
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
 

@@ -18,6 +18,7 @@ import {
 import {
   createCreateSessionController,
   createGetActiveSessionController,
+  createSessionHygienePoller,
 } from "./composition/session.js";
 
 import {
@@ -53,9 +54,37 @@ export function createServer(
     resolvedRouterOsClient,
   );
 
+  const sessionHygienePoller = createSessionHygienePoller();
+
+  // Registered before the RouterOS hook below: session hygiene has no
+  // RouterOS dependency and must not be blocked by a RouterOS
+  // connection failure. Fastify runs onReady hooks in registration
+  // order and stops at the first one that throws, so this ordering
+  // guarantees this poller starts regardless of what the RouterOS
+  // hook does next.
   server.addHook("onReady", async () => {
-    await resolvedRouterOsClient.connect();
-    routerOsAccessPoller.start();
+    sessionHygienePoller.start();
+  });
+
+  // A RouterOS connect() failure must not take the whole server down.
+  // Logged and swallowed rather than rethrown, so server.ready()
+  // resolves and every other route remains available. The RouterOS
+  // poller simply does not start until a future restart succeeds --
+  // there is no automatic reconnect/retry here.
+  server.addHook("onReady", async () => {
+    try {
+      await resolvedRouterOsClient.connect();
+      routerOsAccessPoller.start();
+    } catch (error) {
+      server.log.error(
+        { err: error },
+        "Failed to connect to RouterOS at startup. The RouterOS access poller will not start; other routes remain available.",
+      );
+    }
+  });
+
+  server.addHook("onClose", async () => {
+    sessionHygienePoller.stop();
   });
 
   server.addHook("onClose", async () => {

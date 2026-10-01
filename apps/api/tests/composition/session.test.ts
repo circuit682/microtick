@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createCreateSessionController,
   createGetActiveSessionController,
+  createSessionHygienePoller,
 } from "@composition/session.js";
 
 import { CreateSessionController } from "@http/session/controller/CreateSessionController.js";
@@ -21,5 +22,13 @@ describe("session composition", () => {
 
     expect(controller).toBeInstanceOf(GetActiveSessionController);
     expect(typeof controller.handle).toBe("function");
+  });
+
+  it("creates the session hygiene poller", () => {
+    const poller = createSessionHygienePoller();
+
+    expect(poller).toBeDefined();
+    expect(typeof poller.start).toBe("function");
+    expect(typeof poller.stop).toBe("function");
   });
 });

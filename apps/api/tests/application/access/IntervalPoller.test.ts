@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { RouterOsAccessPoller } from "@application/access/RouterOsAccessPoller.js";
+import { IntervalPoller } from "@application/access/IntervalPoller.js";
 
-describe("RouterOsAccessPoller", () => {
+describe("IntervalPoller", () => {
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it("executes the RouterOS activation trigger on each polling interval", async () => {
+  it("executes the scheduled operation on each polling interval", async () => {
     vi.useFakeTimers();
 
     const execute = vi.fn(async () => {});
 
-    const poller = new RouterOsAccessPoller(execute, 1_000);
+    const poller = new IntervalPoller(execute, 1_000);
 
     poller.start();
 
@@ -41,7 +41,7 @@ describe("RouterOsAccessPoller", () => {
       .mockReturnValueOnce(firstExecution)
       .mockResolvedValue(undefined);
 
-    const poller = new RouterOsAccessPoller(execute, 1_000);
+    const poller = new IntervalPoller(execute, 1_000);
 
     poller.start();
 

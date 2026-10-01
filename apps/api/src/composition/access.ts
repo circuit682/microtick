@@ -1,10 +1,9 @@
 import { ActivateInternetAccess } from "@application/access/ActivateInternetAccess.js";
 import { ActivateInternetAccessFromRouterOs } from "@application/access/ActivateInternetAccessFromRouterOs.js";
 import { ExpireExpiredInternetAccess } from "@application/access/ExpireExpiredInternetAccess.js";
+import { IntervalPoller } from "@application/access/IntervalPoller.js";
 import { RecordInternetAccessUsage } from "@application/access/RecordInternetAccessUsage.js";
 import { RecordInternetAccessUsageFromRouterOs } from "@application/access/RecordInternetAccessUsageFromRouterOs.js";
-import { RouterOsAccessPoller } from "@application/access/RouterOsAccessPoller.js";
-import { ExpireExpiredSessions } from "@application/session/ExpireExpiredSessions.js";
 
 import type { RouterOsClient } from "@application/ports/RouterOsClient.js";
 
@@ -13,17 +12,14 @@ import { env } from "@config/env.js";
 import { PrismaInternetAccessRepository } from "@infrastructure/access/PrismaInternetAccessRepository.js";
 import { PrismaNetworkIdentityRepository } from "@infrastructure/network/PrismaNetworkIdentityRepository.js";
 import { PrismaPurchaseRepository } from "@infrastructure/purchase/PrismaPurchaseRepository.js";
-import { PrismaSessionRepository } from "@infrastructure/session/PrismaSessionRepository.js";
 import { Aes256GcmCredentialEncryptor } from "@infrastructure/security/Aes256GcmCredentialEncryptor.js";
 
 export function createRouterOsAccessPoller(
   routerOsClient: RouterOsClient,
-): RouterOsAccessPoller {
+): IntervalPoller {
   const internetAccessRepository = new PrismaInternetAccessRepository();
 
   const purchaseRepository = new PrismaPurchaseRepository();
-
-  const sessionRepository = new PrismaSessionRepository();
 
   const encryptor = new Aes256GcmCredentialEncryptor(
     env.security.networkIdentityEncryptionKey,
@@ -67,9 +63,7 @@ export function createRouterOsAccessPoller(
     routerOsClient,
   );
 
-  const expireExpiredSessions = new ExpireExpiredSessions(sessionRepository);
-
-  return new RouterOsAccessPoller(async () => {
+  return new IntervalPoller(async () => {
     const intervals = await routerOsClient.getHotspotSessionIntervals();
     await recordInternetAccessUsageFromRouterOs.execute(intervals);
 
@@ -78,7 +72,6 @@ export function createRouterOsAccessPoller(
     await recordInternetAccessUsageFromRouterOs.execute(completedIntervals);
 
     const now = new Date();
-    await expireExpiredSessions.execute({ now });
     await expireExpiredInternetAccess.execute({ now });
 
     await activateInternetAccessFromRouterOs.execute();
