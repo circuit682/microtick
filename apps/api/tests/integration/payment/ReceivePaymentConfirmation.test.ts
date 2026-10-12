@@ -107,7 +107,7 @@ describe("POST /payments/intasend/webhook", () => {
     });
 
     expect(purchase).not.toBeNull();
-    expect(purchase?.customerId).toBe("254712345678");
+    expect(purchase?.customerId).toBe("customer-001");
     expect(purchase?.planId).toBe(plan.id);
 
     const access = await prisma.internetAccess.findUnique({
@@ -120,7 +120,7 @@ describe("POST /payments/intasend/webhook", () => {
 
     expect(access?.purchaseId).toBe(purchase!.id);
 
-    expect(access?.customerId).toBe("254712345678");
+    expect(access?.customerId).toBe("customer-001");
 
     expect(access?.grantedAt).toEqual(purchase!.purchasedAt);
 

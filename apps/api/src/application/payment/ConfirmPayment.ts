@@ -34,7 +34,7 @@ export class ConfirmPayment {
 
     await this.fulfilPurchase.execute({
       paymentId: paymentIntent.id,
-      customerId: paymentIntent.phoneNumber,
+      customerId: paymentIntent.customerId,
       planId: paymentIntent.planId,
       purchasedAt: new Date(),
     });

@@ -185,6 +185,10 @@ describe("ReceivePaymentConfirmation", () => {
 
     expect(purchase).not.toBeNull();
 
+    // The purchase belongs to the customer who initiated the payment, not
+    // to the phone number they paid from.
+    expect(purchase?.customerId).toBe("customer-001");
+
     expect(purchase?.planId).toBe(plan.id);
     expect(purchase?.planName).toBe(plan.name);
 
@@ -199,7 +203,7 @@ describe("ReceivePaymentConfirmation", () => {
     expect(purchase?.accessMethod).toBe(plan.accessMethod);
 
     const identity = networkIdentities.find(
-      (item) => item.customerId === paymentIntent.phoneNumber,
+      (item) => item.customerId === "customer-001",
     );
 
     expect(identity).not.toBeUndefined();
@@ -215,6 +219,6 @@ describe("ReceivePaymentConfirmation", () => {
 
     expect(access?.purchaseId).toBe(purchase?.id);
 
-    expect(access?.customerId).toBe(paymentIntent.phoneNumber);
+    expect(access?.customerId).toBe("customer-001");
   });
 });
